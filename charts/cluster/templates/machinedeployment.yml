@@ -1,0 +1,25 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: {{ $name }}-md-0
+spec:
+  clusterName: {{ $name }}
+  replicas: {{ .Values.config.worker.replicas }}
+  selector:
+    matchLabels:
+  template:
+    spec:
+      clusterName: {{ $name }}
+      version: {{ .Values.config.version | quote }}
+      bootstrap:
+        configRef:
+          name: {{ $name }}
+          namespace: {{ .Release.Namespace }}
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+      infrastructureRef:
+        name: {{ $name }}-worker
+        namespace: {{ .Release.Namespace }}
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+        kind: KubevirtMachineTemplate

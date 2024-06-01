@@ -1,0 +1,26 @@
+{{ $name := include "cluster.fullname" . -}}
+kind: KubeadmControlPlane
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+metadata:
+  name: {{ include "cluster.fullname" . }}
+spec:
+  replicas: {{ .Values.config.controlPlane.replicas }}
+  machineTemplate:
+    infrastructureRef:
+      kind: KubevirtMachineTemplate
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+      name: {{ $name }}-control-plane
+      namespace: {{ .Release.Namespace }}
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      networking:
+        dnsDomain: {{ $name }}.{{ .Release.Namespace }}.local
+        podSubnet: {{ .Values.config.podSubnet }}
+        serviceSubnet: {{ .Values.config.serviceSubnet }}
+    initConfiguration:
+      nodeRegistration:
+        criSocket: "/var/run/containerd/containerd.sock"
+    joinConfiguration:
+      nodeRegistration:
+        criSocket: "/var/run/containerd/containerd.sock"
+  version: {{ .Values.config.version | quote }}

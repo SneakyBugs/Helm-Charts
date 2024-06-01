@@ -1,0 +1,20 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-traefik
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: traefik
+    repoURL: https://traefik.github.io/charts
+    targetRevision: {{ .Values.config.traefikVersion }}
+    helm:
+      releaseName: traefik
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      selfHeal: true

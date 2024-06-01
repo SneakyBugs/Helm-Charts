@@ -1,0 +1,38 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-calico
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: tigera-operator
+    repoURL: https://docs.tigera.io/calico/charts
+    targetRevision: {{ .Values.config.calicoVersion }}
+    helm:
+      releaseName: tigera-operator
+      values: >
+        installation:
+          calicoNetwork:
+            bgp: Disabled
+            ipPools:
+              - allowedUses:
+                  - Workload
+                  - Tunnel
+                blockSize: 26
+                cidr: {{ .Values.config.podSubnet }}
+                disableBGPExport: false
+                encapsulation: VXLAN
+                name: default-ipv4-ippool
+                natOutgoing: Enabled
+                nodeSelector: all()
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: tigera-operator
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true

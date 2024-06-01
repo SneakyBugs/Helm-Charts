@@ -1,0 +1,63 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    capk.cluster.x-k8s.io/template-kind: extra-resource
+    cluster.x-k8s.io/cluster-name: {{ $name }}
+    k8s-app: kubevirt-cloud-controller-manager
+  name: {{ $name }}-ccm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      capk.cluster.x-k8s.io/template-kind: extra-resource
+      cluster.x-k8s.io/cluster-name: {{ $name }}
+      k8s-app: kubevirt-cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        capk.cluster.x-k8s.io/template-kind: extra-resource
+        cluster.x-k8s.io/cluster-name: {{ $name }}
+        k8s-app: kubevirt-cloud-controller-manager
+    spec:
+      containers:
+      - args:
+        - --cloud-provider=kubevirt
+        - --cloud-config=/etc/cloud/cloud-config
+        - --kubeconfig=/etc/kubernetes/kubeconfig/value
+        - --authentication-skip-lookup=true
+        - --cluster-name={{ $name }}
+        command:
+        - /bin/kubevirt-cloud-controller-manager
+        image: quay.io/kubevirt/kubevirt-cloud-controller-manager:v0.5.1
+        imagePullPolicy: Always
+        name: kubevirt-cloud-controller-manager
+        resources:
+          requests:
+            cpu: 100m
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/kubernetes/kubeconfig
+          name: kubeconfig
+          readOnly: true
+        - mountPath: /etc/cloud
+          name: cloud-config
+          readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      serviceAccountName: {{ $name }}-ccm
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      volumes:
+      - configMap:
+          name: {{ $name }}-ccm
+        name: cloud-config
+      - name: kubeconfig
+        secret:
+          secretName: {{ $name }}-kubeconfig

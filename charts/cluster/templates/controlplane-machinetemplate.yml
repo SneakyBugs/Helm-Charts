@@ -1,0 +1,53 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: KubevirtMachineTemplate
+metadata:
+  name: {{ include "cluster.fullname" . }}-control-plane
+spec:
+  template:
+    spec:
+      virtualMachineBootstrapCheck:
+        checkStrategy: ssh
+      virtualMachineTemplate:
+        metadata:
+          namespace: {{ .Release.Namespace }}
+        spec:
+          runStrategy: Always
+          dataVolumeTemplates:
+            - apiVersion: cdi.kubevirt.io/v1beta1
+              kind: DataVolume
+              metadata:
+                name: disk
+              spec:
+                source:
+                  http:
+                    url: {{ .Values.config.image }}
+                pvc:
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: {{ .Values.config.controlPlane.resources.storage }}
+          template:
+            spec:
+              domain:
+                cpu:
+                  cores: {{ .Values.config.controlPlane.resources.cores }}
+                memory:
+                  guest: {{ .Values.config.controlPlane.resources.memory }}
+                devices:
+                  networkInterfaceMultiqueue: true
+                  interfaces:
+                    - name: cluster
+                      bridge: {}
+                  disks:
+                    - disk:
+                        bus: virtio
+                      name: disk
+              evictionStrategy: External
+              networks:
+                - name: cluster
+                  pod: {}
+              volumes:
+                - name: disk
+                  dataVolume:
+                    name: disk

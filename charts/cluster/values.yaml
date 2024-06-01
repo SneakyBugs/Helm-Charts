@@ -1,0 +1,25 @@
+nameOverride: ""
+fullnameOverride: ""
+argocdNamespace: argocd
+
+config:
+  podSubnet: 10.243.0.0/16
+  serviceSubnet: 10.95.0.0/16
+  image: http://10.1.0.13:8000/rocky-9.qcow2
+  version: 1.30.0
+  calicoVersion: v3.28.0
+  traefikVersion: 28.1.0
+  controlPlane:
+    replicas: 1
+    resources:
+      storage: 16Gi
+      cores: 2
+      memory: 4Gi
+
+  worker:
+    # TODO use
+    replicas: 1
+    resources:
+      storage: 32Gi
+      cores: 4
+      memory: 8Gi

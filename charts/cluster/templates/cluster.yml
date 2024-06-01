@@ -1,0 +1,23 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: {{ $name }}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - {{ .Values.config.podSubnet }}
+    services:
+      cidrBlocks:
+        - {{ .Values.config.serviceSubnet }}
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: KubevirtCluster
+    name: {{ $name }}
+    namespace: {{ .Release.Namespace }}
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: {{ $name }}
+    namespace: {{ .Release.Namespace }}

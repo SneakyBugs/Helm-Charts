@@ -1,0 +1,15 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: '*'
+      name: {{ .Release.Namespace }}/{{ $name }}
+  sourceRepos:
+    - '*'
