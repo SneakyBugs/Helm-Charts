@@ -9,6 +9,7 @@ config:
   version: 1.30.0
   calicoVersion: v3.28.0
   traefikVersion: 28.1.0
+  certManagerVersion: v1.14.5
   controlPlane:
     replicas: 1
     resources:

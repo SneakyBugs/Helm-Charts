@@ -1,0 +1,24 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-cert-manager
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: cert-manager
+    repoURL: https://charts.jetstack.io
+    targetRevision: {{ .Values.config.certManagerVersion }}
+    helm:
+      releaseName: cert-manager
+      values: >
+        installCRDs: true
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
