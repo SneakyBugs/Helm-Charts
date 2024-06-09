@@ -12,8 +12,10 @@ spec:
     targetRevision: {{ .Values.config.certManagerVersion }}
     helm:
       releaseName: cert-manager
-      values: >
-        installCRDs: true
+      valuesObject:
+        crds:
+          enabled: true
+          keep: true
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: cert-manager

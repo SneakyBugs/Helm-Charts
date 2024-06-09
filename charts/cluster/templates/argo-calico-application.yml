@@ -13,6 +13,10 @@ spec:
     helm:
       releaseName: tigera-operator
       values: >
+        defaultFelixConfiguration:
+          enabled: true
+          # Need to set this because the cluster is running inside another VXLAN overlay network.
+          vxlanPort: 8472
         installation:
           calicoNetwork:
             bgp: Disabled

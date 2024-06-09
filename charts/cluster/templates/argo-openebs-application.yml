@@ -1,0 +1,35 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-openebs
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: openebs
+    repoURL: https://openebs.github.io/openebs
+    targetRevision: {{ .Values.config.openEBSVersion }}
+    helm:
+      releaseName: openebs
+      valuesObject:
+        engines:
+          replicated:
+            mayastor:
+              enabled: false
+          local:
+            zfs:
+              enabled: false
+            lvm:
+              enabled: false
+        localpv-provisioner:
+          hostpathClass:
+            isDefaultClass: true
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: openebs
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
