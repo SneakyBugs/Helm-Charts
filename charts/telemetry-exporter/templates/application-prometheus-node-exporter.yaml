@@ -1,0 +1,28 @@
+{{ $name := include "telemetry-exporter.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-node-exporter" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-exporter.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s" .Release.Namespace $name }}
+  source:
+    chart: prometheus-node-exporter
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{ .Values.prometheusNodeExporter.chartVersion }}
+    helm:
+      releaseName: prometheus-node-exporter
+      valuesObject:
+        prometheus:
+          monitor:
+            enabled: true
+  destination:
+    name: {{ printf "%s/%s" .Release.Namespace .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

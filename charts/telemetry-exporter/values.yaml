@@ -15,3 +15,5 @@ prometheusOperatorCRDs:
   chartVersion: 12.0.0
 kubeStateMetrics:
   chartVersion: 5.20.0
+prometheusNodeExporter:
+  chartVersion: 4.36.0
