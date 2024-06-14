@@ -1,0 +1,14 @@
+{{ $name := include "telemetry-exporter-components.fullname" . -}}
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: {{ $name }}
+  labels:
+    fluentbit.fluent.io/enabled: 'true'
+    fluentbit.fluent.io/mode: k8s
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+spec:
+  matchRegex: (?:kube|service)\.(.*)
+  opentelemetry:
+    host: {{ $name }}-collector
+    port: 4318

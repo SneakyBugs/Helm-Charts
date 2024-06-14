@@ -1,0 +1,44 @@
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: {{ include "telemetry-exporter-components.fullname" . }}
+  labels:
+    fluentbit.fluent.io/enabled: 'true'
+    fluentbit.fluent.io/mode: k8s
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+spec:
+  match: kube.*
+  filters:
+    - kubernetes:
+        labels: true
+        annotations: true
+    - nest:
+        operation: lift
+        nestedUnder: kubernetes
+        addPrefix: kubernetes_
+    - nest:
+        operation: lift
+        nestedUnder: kubernetes_labels
+        addPrefix: labels_kubernetes_
+    - modify:
+        rules:
+          - copy:
+              kubernetes_pod_name: pod
+              kubernetes_container_name: container
+              kubernetes_namespace_name: namespace
+              kubernetes_host: host
+              labels_kubernetes_app.kubernetes.io/component: component
+              labels_kubernetes_app.kubernetes.io/instance: instance
+              labels_kubernetes_app.kubernetes.io/name: app
+    - nest:
+        operation: nest
+        wildcard:
+          - labels_kubernetes_*
+        nestUnder: kubernetes_labels
+        removePrefix: labels_kubernetes_
+    - nest:
+        operation: nest
+        wildcard:
+          - kubernetes_*
+        nestUnder: kubernetes
+        removePrefix: kubernetes_

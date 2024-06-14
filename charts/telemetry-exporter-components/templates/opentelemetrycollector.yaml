@@ -39,3 +39,7 @@ spec:
           receivers: [otlp, prometheus]
           processors: []
           exporters: [debug]
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug]

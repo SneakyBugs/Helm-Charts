@@ -1,0 +1,18 @@
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: {{ include "telemetry-exporter-components.fullname" . }}
+  labels:
+    fluentbit.fluent.io/enabled: 'true'
+    fluentbit.fluent.io/mode: k8s
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+spec:
+  tail:
+    tag: kube.*
+    path: /var/log/containers/*.log
+    multilineParser: cri
+    refreshIntervalSeconds: 10
+    memBufLimit: 5MB
+    skipLongLines: true
+    db: /fluent-bit/tail/pos.db
+    dbSync: Normal
