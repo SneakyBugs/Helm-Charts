@@ -1,0 +1,35 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ include "telemetry-exporter-components.fullname" . }}
+  labels:
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+spec:
+  mode: statefulset
+  targetAllocator:
+    enabled: true
+    serviceAccount: {{ include "telemetry-exporter-components.fullname" . }}-targetallocator
+    prometheusCR:
+      enabled: true
+      serviceMonitorSelector: {}
+      podMonitorSelector: {}
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+          http: {}
+      prometheus:
+        config:
+          scrape_configs: []
+
+    exporters:
+      debug:
+        verbosity: detailed
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp, prometheus]
+          processors: []
+          exporters: [debug]

@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "telemetry-exporter-components.fullname" . }}-targetallocator
+  labels:
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+    rbac.authorization.k8s.io/aggregate-to-admin: 'true'
+    rbac.authorization.k8s.io/aggregate-to-edit: 'true'
+    rbac.authorization.k8s.io/aggregate-to-view: 'true'
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+      - services
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+      - podmonitors
+    verbs:
+      - get
+      - watch
+      - list
