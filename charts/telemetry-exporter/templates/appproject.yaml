@@ -1,0 +1,17 @@
+{{ $name := include "telemetry-exporter.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ printf "%s-%s" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-exporter.labels" . | nindent 4 }}
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: '*'
+      name: {{ printf "%s/%s" .Release.Namespace .Values.destinationCluster }}
+  sourceRepos:
+    - '*'

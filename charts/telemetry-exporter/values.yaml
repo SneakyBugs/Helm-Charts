@@ -1,0 +1,13 @@
+# Default values for telemetry-exporter.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+argocdNamespace: argocd
+destinationCluster: cluster
+openTelemetryOperator:
+  chartVersion: 0.62.0
+fluentOperator:
+  chartVersion: v2.9.0

@@ -1,0 +1,29 @@
+{{ $name := include "telemetry-exporter.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-fluent-operator" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-exporter.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s" .Release.Namespace $name }}
+  source:
+    repoURL: https://github.com/fluent/fluent-operator.git
+    path: charts/fluent-operator
+    targetRevision: {{ .Values.fluentOperator.chartVersion }}
+    helm:
+      releaseName: fluent-operator
+      valuesObject:
+        containerRuntime: containerd
+        # Disable the default FluentBit pipeline because it does not fit our stack.
+        kubernetes: false
+
+  destination:
+    name: {{ printf "%s/%s" .Release.Namespace .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

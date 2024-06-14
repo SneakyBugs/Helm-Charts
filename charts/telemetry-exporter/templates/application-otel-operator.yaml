@@ -1,0 +1,28 @@
+{{ $name := include "telemetry-exporter.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-otel-operator" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-exporter.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s" .Release.Namespace $name }}
+  source:
+    chart: opentelemetry-operator
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    targetRevision: {{ .Values.openTelemetryOperator.chartVersion }}
+    helm:
+      releaseName: opentelemetry-operator
+      valuesObject:
+        manager:
+          collectorImage:
+            repository: "otel/opentelemetry-collector-contrib"
+  destination:
+    name: {{ printf "%s/%s" .Release.Namespace .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
