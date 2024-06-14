@@ -8,29 +8,38 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-edit: 'true'
     rbac.authorization.k8s.io/aggregate-to-view: 'true'
 rules:
-  - apiGroups:
-      - ''
+  - apiGroups: [""]
     resources:
-      - pods
-      - services
-    verbs:
-      - get
-      - watch
-      - list
-  - apiGroups:
-      - discovery.k8s.io
+    - nodes
+    - nodes/metrics
+    - services
+    - endpoints
+    - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
     resources:
-      - endpointslices
-    verbs:
-      - get
-      - watch
-      - list
+    - configmaps
+    verbs: ["get"]
   - apiGroups:
-      - monitoring.coreos.com
+    - discovery.k8s.io
     resources:
-      - servicemonitors
-      - podmonitors
+    - endpointslices
+    verbs: ["get", "list", "watch"]
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+  - apiGroups:
+    - monitoring.coreos.com
+    resources:
+    - servicemonitors
+    - podmonitors
     verbs:
-      - get
-      - watch
-      - list
+    - '*'
+  - apiGroups: [""]
+    resources:
+    - namespaces
+    verbs: ["get", "list", "watch"]

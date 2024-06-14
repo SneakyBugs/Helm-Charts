@@ -1,0 +1,24 @@
+{{ $name := include "telemetry-exporter.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-prometheus-crds" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-exporter.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s" .Release.Namespace $name }}
+  source:
+    chart: prometheus-operator-crds
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{ .Values.prometheusOperatorCRDs.chartVersion }}
+    helm:
+      releaseName: prometheus-operator-crds
+  destination:
+    name: {{ printf "%s/%s" .Release.Namespace .Values.destinationCluster }}
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

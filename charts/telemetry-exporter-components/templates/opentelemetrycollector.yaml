@@ -1,14 +1,15 @@
+{{ $name := include "telemetry-exporter-components.fullname" . -}}
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
-  name: {{ include "telemetry-exporter-components.fullname" . }}
+  name: {{ $name }}
   labels:
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
   mode: statefulset
   targetAllocator:
     enabled: true
-    serviceAccount: {{ include "telemetry-exporter-components.fullname" . }}-targetallocator
+    serviceAccount: {{ $name }}-targetallocator
     prometheusCR:
       enabled: true
       serviceMonitorSelector: {}
@@ -22,6 +23,11 @@ spec:
       prometheus:
         config:
           scrape_configs: []
+        target_allocator:
+          endpoint: http://{{ $name }}-targetallocator:80
+          interval: 30s
+          collector_id: $POD_NAME
+
 
     exporters:
       debug:

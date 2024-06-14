@@ -11,3 +11,7 @@ openTelemetryOperator:
   chartVersion: 0.62.0
 fluentOperator:
   chartVersion: v2.9.0
+prometheusOperatorCRDs:
+  chartVersion: 12.0.0
+kubeStateMetrics:
+  chartVersion: 5.20.0
