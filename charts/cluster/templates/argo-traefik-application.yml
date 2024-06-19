@@ -12,6 +12,11 @@ spec:
     targetRevision: {{ .Values.config.traefikVersion }}
     helm:
       releaseName: traefik
+      valuesObject:
+        providers:
+          kubernetesIngress:
+            publishedService:
+              enabled: true
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: kube-system
