@@ -1,0 +1,23 @@
+# Default values for telemetry-system.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+argocdNamespace: argocd
+destinationCluster: cluster
+destinationClusterDomain: cluster.foo.local
+
+kubePrometheusStack:
+  chartVersion: 59.1.0
+  grafana:
+    adminUser: admin
+    adminPassword: admin
+    host: grafana.infra.sneakybugs.com
+
+tempo:
+  chartVersion: 1.9.0
+
+loki:
+  chartVersion: 6.6.2

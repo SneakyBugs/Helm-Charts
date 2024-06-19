@@ -1,0 +1,32 @@
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-tempo
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: tempo
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: {{ .Values.tempo.chartVersion }}
+    helm:
+      releaseName: tempo
+      valuesObject:
+        persistence:
+          enabled: true
+        tempo:
+          reportingEnabled: false
+          metricsGenerator:
+            enabled: true
+            remoteWriteUrl: http://prometheus-stack-prometheus:9090/api/v1/write
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

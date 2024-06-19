@@ -1,0 +1,91 @@
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-prometheus-stack
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{ .Values.kubePrometheusStack.chartVersion }}
+    helm:
+      releaseName: prometheus-stack
+      valuesObject:
+        # Override to avoid unnecessarily long names.
+        nameOverride: prometheus-stack
+        # This chart does not need exporters because it deploys the centralized system.
+        nodeExporter:
+          enabled: false
+        kubeEtcd:
+          enabled: false
+        prometheus:
+          prometheusSpec:
+            serviceMonitorSelector:
+              matchLabels:
+                prometheus: in-cluster
+            podMonitorSelector:
+              matchLabels:
+                prometheus: in-cluster
+            # additionalScrapeConfigs:
+            #   - job_name: opentelemetry-collector
+            #     static_configs:
+            #       - targets:
+            #           - collector-collector:9000
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: 10Gi
+                  volumeMode: Filesystem
+                  accessModes:
+                    - ReadWriteOnce
+        grafana:
+          adminUser: {{ .Values.kubePrometheusStack.grafana.adminUser }}
+          adminPassword: {{ .Values.kubePrometheusStack.grafana.adminPassword }}
+          additionalDataSources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-stack-prometheus:9090
+              editable: false
+            - name: Loki
+              type: loki
+              url: http://loki:3100
+              editable: false
+            - name: Tempo
+              type: tempo
+              url: http://tempo:3100
+              editable: false
+          grafana.ini:
+            analytics:
+              reporting_enabled: false
+          persistence:
+            enabled: true
+          ingress:
+            enabled: true
+            # annotations:
+            #   cert-manager.io/cluster-issuer: letsencrypt
+            hosts:
+              - {{ .Values.kubePrometheusStack.grafana.host }}
+            # tls:
+            #   - secretName: grafana-tls
+            #     hosts:
+            #       - {{ .Values.kubePrometheusStack.grafana.host }}
+
+
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+      # Remove once this issue is fixed.
+      # https://github.com/argoproj/argo-cd/issues/18548
+      # - IncludeMutationWebhook=true

@@ -1,0 +1,71 @@
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-loki
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: loki
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: {{ .Values.loki.chartVersion }}
+    helm:
+      releaseName: loki
+      valuesObject:
+        global:
+          clusterDomain: {{ .Values.destinationClusterDomain }}
+        chunksCache:
+          allocatedMemory: 1024
+        deploymentMode: SingleBinary
+        loki:
+          # Disabling auth sets single tenant mode.
+          auth_enabled: false
+          # Setting replication factor and storage type to enable monolithic mode.
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: filesystem
+          schemaConfig:
+            configs:
+            - from: "2024-06-01"
+              object_store: filesystem
+              store: tsdb
+              schema: v13
+              index:
+                prefix: index_
+                period: 24h
+          tracing:
+            enabled: true
+        singleBinary:
+          replicas: 1
+          # TODO Uncomment when tracing is ready.
+          # extraEnv:
+          #   - name: JAEGER_AGENT_HOST
+          #     value: collector-collector
+        read:
+          replicas: 0
+        backend:
+          replicas: 0
+        write:
+          replicas: 0
+        monitoring:
+          # Disable self monitoring and Grafana Agent because Loki's logs are already
+          # being collected by FluentBit.
+          selfMonitoring:
+            enabled: false
+            grafanaAgent:
+              installOperator: false
+        # Chart test requires self monitoring which is disabled.
+        test:
+          enabled: false
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
