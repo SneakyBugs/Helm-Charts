@@ -1,0 +1,13 @@
+# Default values for telemetry-system-components.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+nameOverride: ""
+fullnameOverride: ""
+
+telemetryIngress:
+  serviceAnnotations:
+    external-dns.alpha.kubernetes.io/hostname: otel.infra.sneakybugs.com
+
+lokiEndpoint: http://loki:3100/loki/api/v1/push
+podMonitorLabels:
+  prometheus: in-cluster

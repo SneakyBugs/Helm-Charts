@@ -1,0 +1,60 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-external-dns
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: external-dns
+    repoURL: https://kubernetes-sigs.github.io/external-dns/
+    targetRevision: {{ .Values.config.externalDNSVersion }}
+    helm:
+      releaseName: external-dns
+      valuesObject:
+        sources:
+          - service
+          - ingress
+          - traefik-proxy
+        extraArgs:
+          - --traefik-disable-legacy
+        provider:
+          name: webhook
+          webhook:
+            image:
+              repository: {{ .Values.config.externalDNSWebhook.repository }}
+              tag: {{ .Values.config.externalDNSWebhook.tag }}
+            env:
+              - name: WEBHOOK_API_ENDPOINT
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ .Values.config.externalDNSWebhook.configMapName }}
+                    key: apiEndpoint
+              - name: WEBHOOK_API_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.config.externalDNSWebhook.secretName }}
+                    key: id
+              - name: WEBHOOK_API_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.config.externalDNSWebhook.secretName }}
+                    key: secret
+              - name: WEBHOOK_ZONES
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ .Values.config.externalDNSWebhook.configMapName }}
+                    key: zones
+            livenessProbe:
+              httpGet:
+                path: /-/liveness
+            readinessProbe:
+              httpGet:
+                path: /-/readiness
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: external-dns
+  syncPolicy:
+    automated:
+      selfHeal: true

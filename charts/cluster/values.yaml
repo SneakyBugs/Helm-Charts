@@ -7,10 +7,17 @@ config:
   serviceSubnet: 10.95.0.0/16
   image: http://10.1.0.13:8000/rocky-9.qcow2
   version: 1.30.0
+  ingressHostname: ingress.services.infra.sneakybugs.com
   calicoVersion: v3.28.0
   traefikVersion: 28.1.0
   certManagerVersion: v1.15.0
+  externalDNSVersion: 1.14.5
   openEBSVersion: 4.0.1
+  externalDNSWebhook:
+    repository: docker.houseofkummer.com/lior/home-dns/external-dns-provider
+    tag: 2.1.1
+    configMapName: cluster-components-external-dns-webhook
+    secretName: cluster-components-external-dns-webhook
   controlPlane:
     replicas: 1
     resources:

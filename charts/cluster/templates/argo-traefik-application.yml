@@ -17,6 +17,9 @@ spec:
           kubernetesIngress:
             publishedService:
               enabled: true
+        service:
+          annotations:
+            external-dns.alpha.kubernetes.io/hostname: {{ .Values.config.ingressHostname }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: kube-system

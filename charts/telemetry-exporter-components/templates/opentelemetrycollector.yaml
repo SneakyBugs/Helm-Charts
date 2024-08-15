@@ -30,16 +30,18 @@ spec:
 
 
     exporters:
-      debug:
-        verbosity: detailed
+      otlp:
+        endpoint: {{ .Values.exporterOTLPEndpoint }}
+        tls:
+          insecure: true
 
     service:
       pipelines:
         metrics:
           receivers: [otlp, prometheus]
           processors: []
-          exporters: [debug]
+          exporters: [otlp]
         logs:
           receivers: [otlp]
           processors: []
-          exporters: [debug]
+          exporters: [otlp]

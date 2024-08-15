@@ -1,0 +1,44 @@
+{{ $name := include "telemetry-system-components.fullname" . -}}
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "telemetry-system-components.labels" . | nindent 4 }}
+spec:
+  mode: deployment
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+          http: {}
+
+    processors:
+      attributes:
+        actions:
+          - action: insert
+            key: loki.format
+            value: raw
+          - action: insert
+            key: loki.attribute.labels
+            value: stream, host, namespace, pod, container, component, app, instance
+
+    exporters:
+      loki:
+        endpoint: {{ .Values.lokiEndpoint }}
+      prometheus:
+        endpoint: 0.0.0.0:9000
+      debug:
+        verbosity: detailed
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: []
+          exporters: [prometheus]
+        logs:
+          receivers: [otlp]
+          processors: [attributes]
+          exporters: [loki]

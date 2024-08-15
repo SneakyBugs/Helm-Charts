@@ -1,0 +1,21 @@
+{{ $name := include "telemetry-system-components.fullname" . -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ $name }}-collector
+  labels:
+    {{- include "telemetry-system-components.labels" . | nindent 4 }}
+    {{- .Values.podMonitorLabels | toYaml | nindent 4 }}
+spec:
+  podMetricsEndpoints:
+    - port: prometheus
+  jobLabel: opentelemetry-collector
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opentelemetry-collector
+      app.kubernetes.io/instance: {{ .Release.Namespace }}.{{ $name }}
+      app.kubernetes.io/managed-by: opentelemetry-operator
+      app.kubernetes.io/part-of: opentelemetry

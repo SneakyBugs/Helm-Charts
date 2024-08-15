@@ -1,0 +1,13 @@
+# Default values for cluster-components.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+externalDNSWebhook:
+  namespace: external-dns
+  apiEndpoint: http://dns.infra.sneakybugs.com/v1
+  zones: houseofkummer.com.,sneakybugs.com.
+  serviceAccountID: sd1
+  serviceAccountSecret: q5fYzV3SkCD5ByUVdsNdnKRL3tvDhUrx

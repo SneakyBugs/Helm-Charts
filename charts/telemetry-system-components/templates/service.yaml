@@ -1,0 +1,25 @@
+{{ $name := include "telemetry-system-components.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-collector-ingress
+  {{- with .Values.telemetryIngress.serviceAnnotations }}
+  annotations:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "telemetry-system-components.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/component: opentelemetry-collector
+    app.kubernetes.io/instance: {{ .Release.Namespace }}.{{ $name }}
+    app.kubernetes.io/managed-by: opentelemetry-operator
+    app.kubernetes.io/part-of: opentelemetry
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      appProtocol: grpc
+    - name: otlp-http
+      port: 4318
+      appProtocol: http
