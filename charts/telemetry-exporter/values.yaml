@@ -8,7 +8,7 @@ fullnameOverride: ""
 argocdNamespace: argocd
 destinationCluster: cluster
 openTelemetryOperator:
-  chartVersion: 0.62.0
+  chartVersion: 0.68.0
 fluentOperator:
   chartVersion: v2.9.0
 prometheusOperatorCRDs:

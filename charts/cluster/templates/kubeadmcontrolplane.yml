@@ -14,7 +14,7 @@ spec:
   kubeadmConfigSpec:
     clusterConfiguration:
       networking:
-        dnsDomain: {{ $name }}.{{ .Release.Namespace }}.local
+        dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
         serviceSubnet: {{ .Values.config.serviceSubnet }}
     initConfiguration:

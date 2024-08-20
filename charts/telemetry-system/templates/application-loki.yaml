@@ -20,12 +20,19 @@ spec:
         chunksCache:
           allocatedMemory: 1024
         deploymentMode: SingleBinary
+        lokiCanary:
+          # Pushed by FluentBit.
+          push: false
+          labelname: k8s_pod_name
         loki:
           # Disabling auth sets single tenant mode.
           auth_enabled: false
           # Setting replication factor and storage type to enable monolithic mode.
           commonConfig:
             replication_factor: 1
+          limits_config:
+            # Enabled for otlp ingest.
+            allow_structured_metadata: true
           storage:
             type: filesystem
           schemaConfig:

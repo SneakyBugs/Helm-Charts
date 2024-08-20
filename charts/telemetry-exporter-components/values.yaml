@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317
+clusterName: foo
 
 nameOverride: ""
 fullnameOverride: ""

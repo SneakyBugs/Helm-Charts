@@ -23,11 +23,9 @@ spec:
       prometheus:
         config:
           scrape_configs: []
-        target_allocator:
-          endpoint: http://{{ $name }}-targetallocator:80
-          interval: 30s
-          collector_id: $POD_NAME
 
+    processors:
+      batch: {}
 
     exporters:
       otlp:
@@ -39,9 +37,9 @@ spec:
       pipelines:
         metrics:
           receivers: [otlp, prometheus]
-          processors: []
+          processors: [batch]
           exporters: [otlp]
         logs:
           receivers: [otlp]
-          processors: []
+          processors: [batch]
           exporters: [otlp]

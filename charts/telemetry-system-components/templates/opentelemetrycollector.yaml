@@ -15,16 +15,16 @@ spec:
           http: {}
 
     processors:
+      batch: {}
       attributes:
         actions:
           - action: insert
-            key: loki.format
-            value: raw
-          - action: insert
             key: loki.attribute.labels
-            value: stream, host, namespace, pod, container, component, app, instance
+            value: k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.host, k8s.cluster.name, service.name, service.instance.id, service.namespace, service.component
 
     exporters:
+      # Yeah the Loki exporter is deprecated, but the OTLP endpoint in Loki refuses to index labels correctly.
+      # Should switch to otlphttp exporter for Loki when they get it actually working and I'm not one of the first users.
       loki:
         endpoint: {{ .Values.lokiEndpoint }}
       prometheus:
@@ -36,9 +36,9 @@ spec:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: []
+          processors: [batch]
           exporters: [prometheus]
         logs:
           receivers: [otlp]
-          processors: [attributes]
+          processors: [batch, attributes]
           exporters: [loki]

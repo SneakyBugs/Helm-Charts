@@ -7,10 +7,10 @@ fullnameOverride: ""
 
 argocdNamespace: argocd
 destinationCluster: cluster
-destinationClusterDomain: cluster.foo.local
+destinationClusterDomain: cluster.local
 
 kubePrometheusStack:
-  chartVersion: 59.1.0
+  chartVersion: 62.1.0
   grafana:
     adminUser: admin
     adminPassword: admin
@@ -20,4 +20,4 @@ tempo:
   chartVersion: 1.9.0
 
 loki:
-  chartVersion: 6.6.2
+  chartVersion: 6.10.0

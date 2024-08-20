@@ -23,22 +23,18 @@ spec:
     - modify:
         rules:
           - copy:
-              kubernetes_pod_name: pod
-              kubernetes_container_name: container
-              kubernetes_namespace_name: namespace
-              kubernetes_host: host
-              labels_kubernetes_app.kubernetes.io/component: component
-              labels_kubernetes_app.kubernetes.io/instance: instance
-              labels_kubernetes_app.kubernetes.io/name: app
-    - nest:
-        operation: nest
-        wildcard:
-          - labels_kubernetes_*
-        nestUnder: kubernetes_labels
-        removePrefix: labels_kubernetes_
-    - nest:
-        operation: nest
-        wildcard:
-          - kubernetes_*
-        nestUnder: kubernetes
-        removePrefix: kubernetes_
+              # Indexed labels.
+              kubernetes_pod_name: k8s.pod.name
+              kubernetes_container_name: k8s.container.name
+              kubernetes_namespace_name: k8s.namespace.name
+              kubernetes_host: k8s.node.host
+              # Metadata.
+              kubernetes_container_image: k8s.container.image
+          - copy:
+              labels_kubernetes_app.kubernetes.io/name: service.name
+              labels_kubernetes_app.kubernetes.io/instance: service.instance.id
+              labels_kubernetes_app.kubernetes.io/component: service.component
+              kubernetes_namespace_name: service.namespace
+          - removeRegex: kubernetes.*
+          - set:
+              k8s.cluster.name: {{ .Values.clusterName }}

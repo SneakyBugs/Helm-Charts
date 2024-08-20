@@ -9,6 +9,10 @@ metadata:
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
   matchRegex: (?:kube|service)\.(.*)
-  opentelemetry:
-    host: {{ $name }}-collector
-    port: 4318
+  customPlugin:
+    config: |
+      name opentelemetry
+      match kube.*
+      host {{ $name }}-collector
+      port 4318
+      logs_body_key_attributes true
