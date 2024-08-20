@@ -8,7 +8,7 @@ metadata:
     fluentbit.fluent.io/mode: k8s
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
-  matchRegex: (?:kube|service)\.(.*)
+  matchRegex: kube\.(.*)
   customPlugin:
     config: |
       name opentelemetry

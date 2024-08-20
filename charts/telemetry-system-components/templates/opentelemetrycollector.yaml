@@ -32,8 +32,6 @@ spec:
         endpoint: {{ .Values.lokiEndpoint }}
       prometheus:
         endpoint: 0.0.0.0:9000
-      debug:
-        verbosity: detailed
 
     service:
       pipelines:
