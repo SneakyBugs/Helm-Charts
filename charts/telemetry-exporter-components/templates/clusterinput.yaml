@@ -12,7 +12,7 @@ spec:
     path: /var/log/containers/*.log
     multilineParser: cri
     refreshIntervalSeconds: 10
-    memBufLimit: 5MB
+    memBufLimit: 128MB
     skipLongLines: true
     db: /fluent-bit/tail/pos.db
     dbSync: Normal

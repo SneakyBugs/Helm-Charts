@@ -13,10 +13,10 @@ spec:
   resources:
     requests:
       cpu: 10m
-      memory: 25Mi
+      memory: 128Mi
     limits:
       cpu: 500m
-      memory: 200Mi
+      memory: 256Mi
   fluentBitConfigName: {{ $name }}
   tolerations:
     - operator: Exists
