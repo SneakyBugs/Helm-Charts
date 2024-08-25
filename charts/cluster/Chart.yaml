@@ -1,6 +1,17 @@
 apiVersion: v2
 name: cluster
-description: A Helm chart for Kubernetes
+description: |-
+  Deploys a Kubernetes cluster with Cluster API and KubeVirt.
+
+  Includes the following addons:
+
+  - Traefik
+  - OpenEBS
+  - Cert Manager
+  - ExternalDNS
+
+  Also includes KubeVirt Cloud Controller Manager for exposing LoadBalancer type
+  services from the tenant cluster to the host cluster.
 
 # A chart can be either an 'application' or a 'library' chart.
 #

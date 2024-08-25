@@ -1,0 +1,46 @@
+{{ description }}
+
+## Prerequisites
+
+Add the Helm repository
+
+```
+helm repo add TODO TODO
+helm repo update
+```
+
+## Install
+
+To install the chart run:
+
+```
+helm install my-release oci://TODO --version {{ version }} --values values.yaml
+```
+
+Assuming you have a `values.yaml` with your values overrides:
+
+## Upgrade
+
+To upgrade the chart run:
+
+```
+helm upgrade my-release oci://TODO --version {{ version }} --values values.yaml
+```
+
+Assuming you have a `values.yaml` with your values overrides:
+
+## Uninstall
+
+To uninstall the chart run:
+
+```
+helm uninstall my-release
+```
+
+## Configuration
+
+| Parameter | Description | Default |
+| --------- | ----------- | ------- |
+{% for (param, comment, default) in values -%}
+| `{{ param }}` | {{ comment }} | {{ default }} |
+{% endfor -%}
