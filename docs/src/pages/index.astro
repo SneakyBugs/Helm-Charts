@@ -1,0 +1,81 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+async function getCharts() {
+  const chartEntries = await getCollection("charts");
+  return chartEntries.map((entry) => {
+    const parts = entry.id.split(".");
+    const slug = parts.slice(0, parts.length - 1).join(".");
+    const [chart, version] = slug.split("/");
+    return { slug, chart, version, entry };
+  });
+}
+
+const chartEntries = await getCharts();
+
+const charts: { [key: string]: any } = {};
+for (const entry of chartEntries) {
+  if (charts[entry.chart] === undefined) {
+    charts[entry.chart] = [];
+  }
+  charts[entry.chart] = [...charts[entry.chart], entry];
+}
+---
+
+<Layout title="Welcome to Astro.">
+  <main class="flex flex-col min-h-screen">
+    <section
+      class="bg-gradient-to-tr from-violet-900 to-fuchsia-700 bg-[length:400%] animate-sidetoside py-32"
+    >
+      <header class="max-w-3xl mx-auto">
+        <h1 class="font-black uppercase text-5xl text-violet-200">
+          Infrastructure charts
+        </h1>
+        <p class="font-light text-xl mt-8 text-violet-300">
+          Helm charts for homelab infrastructure with Cluster API and KubeVirt.
+        </p>
+      </header>
+    </section>
+    <section class="bg-violet-950 py-8">
+      <p class="max-w-3xl mx-auto text-violet-300">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </p>
+    </section>
+    <section class="flex-grow">
+      <ul class="max-w-3xl mx-auto">
+        {
+          Object.keys(charts).map((key) => (
+            <li>
+              <a
+                href={
+                  import.meta.env.BASE_URL +
+                  charts[key][charts[key].length - 1].slug
+                }
+                class="flex mt-8 px-6 py-4 border rounded-lg"
+              >
+                <section class="flex-grow">
+                  <h2 class="font-semibold text-lg mb-4">{key}</h2>
+                  <p>
+                    {charts[key][charts[key].length - 1].entry.data.description}
+                  </p>
+                </section>
+                <span>{charts[key][charts[key].length - 1].version}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+    <section class="py-12 border-t">
+      <p class="max-w-3xl mx-auto text-violet-950">
+        Star
+        <a href="TODO" class="underline text-violet-500">
+          the source on GitHub.
+        </a>
+      </p>
+    </section>
+  </main>
+</Layout>
+
+<style></style>

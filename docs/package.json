@@ -1,0 +1,33 @@
+{
+  "name": "docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.3",
+    "@astrojs/react": "^3.6.2",
+    "@astrojs/tailwind": "^5.1.0",
+    "@headlessui/react": "^2.1.3",
+    "@openfonts/fira-code_latin": "^1.44.8",
+    "@openfonts/inter_latin": "^1.0.2",
+    "@openfonts/lora_latin": "^1.44.2",
+    "@tailwindcss/typography": "^0.5.14",
+    "@types/react-dom": "^18.3.0",
+    "astro": "^4.14.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.4",
+    "prettier": "^3.3.3",
+    "prettier-plugin-astro": "^0.14.1"
+  }
+}
