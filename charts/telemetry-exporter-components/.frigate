@@ -1,13 +1,13 @@
 ---
-description: Deploys cluster with Cluster API and Kubevirt, including addons.
+description: Deploys resources required for the telemetry-exporter chart on the tenant cluster.
 ---
 
 {{ description }}
 
 ## Prerequisites
 
-Argo CD must be installed on the host cluster.
-Make sure to specify the namespace Argo CD is watching resources in using the `argocdNamespace` values option.
+This chart requires a centralized telemetry system deployed using the `telemetry-system` chart.
+Make sure to set `exporterOTLPEndpoint` to the centralized system's OpenTelemetry Collector endpoint.
 
 ## Install
 

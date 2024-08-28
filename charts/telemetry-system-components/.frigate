@@ -1,13 +1,8 @@
 ---
-description: Deploys cluster with Cluster API and Kubevirt, including addons.
+description: Deploys resources required for the telemetry-system chart on the tenant cluster.
 ---
 
 {{ description }}
-
-## Prerequisites
-
-Argo CD must be installed on the host cluster.
-Make sure to specify the namespace Argo CD is watching resources in using the `argocdNamespace` values option.
 
 ## Install
 

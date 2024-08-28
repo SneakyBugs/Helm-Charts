@@ -2,12 +2,12 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.
 
 externalDNSWebhook:
-  namespace: external-dns
-  apiEndpoint: http://dns.infra.sneakybugs.com/v1
-  zones: houseofkummer.com.,sneakybugs.com.
-  serviceAccountID: sd1
-  serviceAccountSecret: q5fYzV3SkCD5ByUVdsNdnKRL3tvDhUrx
+  namespace: external-dns # Namespace to create and deploy ExternalDNS configurations in.
+  apiEndpoint: http://dns.infra.sneakybugs.com/v1 # DNS API server endpoint.
+  zones: houseofkummer.com.,sneakybugs.com. # Zones managed by ExternalDNS.
+  serviceAccountID: sd1 # DNS API service account ID, make sure it has read and edit permissions for all managed zones.
+  serviceAccountSecret: q5fYzV3SkCD5ByUVdsNdnKRL3tvDhUrx # DNS API service account secret.

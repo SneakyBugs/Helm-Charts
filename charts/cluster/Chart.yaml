@@ -5,13 +5,12 @@ description: |-
 
   Includes the following addons:
 
+  - Calico
+  - KubeVirt Cloud Controller Manager for exposing LoadBalancer type services.
   - Traefik
   - OpenEBS
   - Cert Manager
   - ExternalDNS
-
-  Also includes KubeVirt Cloud Controller Manager for exposing LoadBalancer type
-  services from the tenant cluster to the host cluster.
 
 # A chart can be either an 'application' or a 'library' chart.
 #

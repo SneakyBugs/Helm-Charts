@@ -2,22 +2,22 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.
 
-argocdNamespace: argocd
-destinationCluster: cluster
-destinationClusterDomain: cluster.local
+argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
+destinationCluster: cluster # Name of the destination cluster, must be in the same namespace as this chart is deployed in.
+destinationClusterDomain: cluster.local # Domain used for networking.dnsDomain in Kubeadm for the tenant cluster.
 
 kubePrometheusStack:
-  chartVersion: 62.1.0
+  chartVersion: 62.1.0 # Kube Prometheus Stack chart version to deploy.
   grafana:
-    adminUser: admin
-    adminPassword: admin
-    host: grafana.infra.sneakybugs.com
+    adminUser: admin # Default Grafana admin username.
+    adminPassword: admin # Default Grafana admin password.
+    host: grafana.infra.sneakybugs.com # Grafana hostname to set using ExternalDNS.
 
 tempo:
-  chartVersion: 1.9.0
+  chartVersion: 1.9.0 # Grafana Tempo chart version to deploy.
 
 loki:
-  chartVersion: 6.10.0
+  chartVersion: 6.10.0 # Grafana Loki chart version to deploy.

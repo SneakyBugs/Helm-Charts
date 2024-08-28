@@ -2,8 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317
-clusterName: foo
+exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
+clusterName: foo # Cluster name to add as telemetry attribute.
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.

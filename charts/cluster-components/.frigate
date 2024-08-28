@@ -1,13 +1,14 @@
 ---
-description: Deploys cluster with Cluster API and Kubevirt, including addons.
+description: Deploys resources required for the cluster chart addons on the tenant cluster.
 ---
 
 {{ description }}
 
 ## Prerequisites
 
-Argo CD must be installed on the host cluster.
-Make sure to specify the namespace Argo CD is watching resources in using the `argocdNamespace` values option.
+For the ExternalDNS integration to work you need a service account with `read` and `edit` permissions for the zones you want to use.
+
+Note that as of writing, the DNS and API server are still internal projects not yet available publicly.
 
 ## Install
 

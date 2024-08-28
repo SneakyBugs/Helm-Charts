@@ -1,6 +1,9 @@
 apiVersion: v2
 name: cluster-components
-description: A Helm chart for Kubernetes
+description: |-
+  Deploys configurations for addons included in the `cluster` chart.
+
+  This chart must be installed in the tenant cluster.
 
 # A chart can be either an 'application' or a 'library' chart.
 #

@@ -2,18 +2,18 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.
+argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
+destinationCluster: cluster # Name of the destination cluster, must be in the same namespace as this chart is deployed in.
 
-argocdNamespace: argocd
-destinationCluster: cluster
 openTelemetryOperator:
-  chartVersion: 0.68.0
+  chartVersion: 0.68.0 # OpenTelemetry Operator chart version to deploy.
 fluentOperator:
-  chartVersion: v2.9.0
+  chartVersion: v2.9.0 # Fluent Operator chart version to deploy.
 prometheusOperatorCRDs:
-  chartVersion: 12.0.0
+  chartVersion: 12.0.0 # Prometheus Operator CRDs chart version to deploy.
 kubeStateMetrics:
-  chartVersion: 5.20.0
+  chartVersion: 5.20.0 # Kube State Metrics chart version to deploy.
 prometheusNodeExporter:
-  chartVersion: 4.36.0
+  chartVersion: 4.36.0 # Node exporter chart version to deploy.

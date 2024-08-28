@@ -1,6 +1,14 @@
 apiVersion: v2
 name: telemetry-system
-description: A Helm chart for Kubernetes
+description: |-
+  Deploys a centralized telemetry system for ingesting, storing, and displaying logs, metrics, and trace data.
+
+  Deploys the following tools:
+  - Grafana.
+  - Prometheus.
+  - Loki.
+  - Tempo.
+  - OpenTelemetry Collector.
 
 # A chart can be either an 'application' or a 'library' chart.
 #

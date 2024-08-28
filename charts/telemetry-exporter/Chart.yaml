@@ -1,6 +1,12 @@
 apiVersion: v2
 name: telemetry-exporter
-description: A Helm chart for Kubernetes
+description: |-
+  Deployes telemetry collection pipeline exporting to a centralized telemetry system.
+
+  Deployes the following tools:
+  - FluentBit for log collection.
+  - OpenTelemetry Collector for collecting metrics and aggregating all telemetry data.
+  - Exporters for cluster state and node metrics.
 
 # A chart can be either an 'application' or a 'library' chart.
 #

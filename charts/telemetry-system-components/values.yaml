@@ -1,13 +1,13 @@
 # Default values for telemetry-system-components.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.
 
 telemetryIngress:
-  serviceAnnotations:
+  serviceAnnotations: # Annotations to add to the OpenTelemetry Collector LoadBalancer service.
     external-dns.alpha.kubernetes.io/hostname: otel.infra.sneakybugs.com
 
-lokiEndpoint: http://loki:3100/loki/api/v1/push
-podMonitorLabels:
+lokiEndpoint: http://loki:3100/loki/api/v1/push # Loki endpoint to push logs to.
+podMonitorLabels: # Labels to add to the PodMonitor used for scraping aggregated metrics from OpenTelemetry Collector to Prometheus.
   prometheus: in-cluster
