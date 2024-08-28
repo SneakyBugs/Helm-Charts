@@ -1,0 +1,2 @@
+PyYAML==6.0.2
+frigate==0.7.0
