@@ -1,6 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import site from "../content/site";
+import { TipOfTheDay } from "../components/TipOfTheDay.tsx";
 
 async function getCharts() {
   const chartEntries = await getCollection("charts");
@@ -26,23 +28,23 @@ for (const entry of chartEntries) {
 <Layout title="Welcome to Astro.">
   <main class="flex flex-col min-h-screen">
     <section
-      class="bg-gradient-to-tr from-violet-900 to-fuchsia-700 bg-[length:400%] animate-sidetoside py-32"
+      class="bg-gradient-to-tr from-violet-900 to-fuchsia-700 bg-[length:400%] animate-sidetoside py-24 px-2 sm:py-32"
     >
       <header class="max-w-3xl mx-auto">
-        <h1 class="font-black uppercase text-5xl text-violet-200">
-          Infrastructure charts
+        <h1 class="font-black uppercase text-3xl sm:text-5xl text-violet-200">
+          {site.name}
         </h1>
         <p class="font-light text-xl mt-8 text-violet-300">
-          Helm charts for homelab infrastructure with Cluster API and KubeVirt.
+          {site.tagline}
         </p>
       </header>
     </section>
-    <section class="bg-violet-950 py-8">
+    <section class="bg-violet-950 py-8 px-2">
       <p class="max-w-3xl mx-auto text-violet-300">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        <TipOfTheDay tips={site.tips} client:load />
       </p>
     </section>
-    <section class="flex-grow">
+    <section class="flex-grow px-2">
       <ul class="max-w-3xl mx-auto">
         {
           Object.keys(charts).map((key) => (
@@ -67,10 +69,10 @@ for (const entry of chartEntries) {
         }
       </ul>
     </section>
-    <section class="py-12 border-t">
+    <section class="py-12 px-2 mt-8 border-t">
       <p class="max-w-3xl mx-auto text-violet-950">
         Star
-        <a href="TODO" class="underline text-violet-500">
+        <a href={site.source} class="underline text-violet-500">
           the source on GitHub.
         </a>
       </p>
