@@ -41,8 +41,16 @@ const currentIndex = versions.findIndex((entry) => entry.version === version);
 const { Content } = await entry.render()
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout title={`${chart} ${version} | ${site.name}`}>
   <main class="flex flex-col min-h-screen">
+    { currentIndex !== 0 ? (
+    <section class="bg-red-800 text-red-50 py-4 px-2">
+      <section class="max-w-3xl mx-auto">
+        You're viewing an old version of { chart } chart.
+        <a href={ import.meta.env.BASE_URL + versions[0].slug } class="underline">View the latest version.</a>
+      </section>
+    </section>
+    ) : false}
     <section
       class="bg-gradient-to-tr from-violet-900 to-fuchsia-700 bg-[length:400%] animate-sidetoside py-24 px-2 sm:py-32"
     >
