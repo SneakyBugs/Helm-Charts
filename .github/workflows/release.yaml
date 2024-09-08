@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies for release tools
+        run: pip install -r tools/requirements.txt
+      - name: Login to OCI registry
+        run: helm registry login --username "${{ github.actor }}" --password "${{ github.token }}" ghcr.io
+      - name: Package and release chart
+        run: python3 tools/release.py "${{ github.ref }}" --registry "oci://ghcr.io/${{ github.repository_owner }}"
