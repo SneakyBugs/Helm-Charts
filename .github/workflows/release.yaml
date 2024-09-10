@@ -32,6 +32,8 @@ jobs:
       url: ${{ steps.pages-url.outputs.url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
       - name: Install dependencies for documentation generator
         run: pip install -r tools/requirements.txt
       - name: Generate chart documentation

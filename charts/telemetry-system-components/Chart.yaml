@@ -1,6 +1,9 @@
 apiVersion: v2
 name: telemetry-system-components
-description: A Helm chart for Kubernetes
+description: |-
+  Deploys resources required for the `telemetry-system` chart.
+
+  This chart must be installed in the tenant cluster.
 
 # A chart can be either an 'application' or a 'library' chart.
 #
