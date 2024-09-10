@@ -7,5 +7,5 @@ import react from "@astrojs/react";
 export default defineConfig({
   integrations: [tailwind(), react()],
   site: "https://sneakybugs.github.io",
-  base: "Helm-Charts"
+  base: "Helm-Charts/"
 });

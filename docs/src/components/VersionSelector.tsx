@@ -41,9 +41,9 @@ export const VersionSelector: FunctionComponent<Props> = ({
         {versions.map((version, index) => (
           <MenuItem
             key={version.slug}
-            className="block py-1 px-2 hover:bg-violet-900 data-[focus]:bg-violet-900"
+            
           >
-            <a href={import.meta.env.BASE_URL + version.slug}>
+            <a href={import.meta.env.BASE_URL + version.slug} className="block py-1 px-2 hover:bg-violet-900 data-[focus]:bg-violet-900">
               {version.version}
               {index === 0 ? (
                 <span className="ml-1 text-violet-200">Latest</span>
