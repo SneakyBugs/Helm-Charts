@@ -21,3 +21,33 @@ jobs:
         run: python3 tools/release.py "${{ github.ref_name }}" --registry "oci://ghcr.io/${OWNER,,}"
         env:
           OWNER: "${{ github.repository_owner }}"
+
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages-url.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies for documentation generator
+        run: pip install -r tools/requirements.txt
+      - name: Generate chart documentation
+        run: python3 tools/docgen.py .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Install dependencies for Astro website
+        run: |
+          cd docs
+          npm ci
+      - name: Build Astro website
+        run: |
+          cd docs
+          npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+      - uses: actions/deploy-pages@v4
