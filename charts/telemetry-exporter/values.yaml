@@ -7,6 +7,11 @@ fullnameOverride: "" # Override full release name.
 argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 destinationCluster: cluster # Name of the destination cluster, must be in the same namespace as this chart is deployed in.
 
+config:
+  exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
+
+telemetryExporterComponents:
+  chartVersion: 1.0.0
 openTelemetryOperator:
   chartVersion: 0.68.0 # OpenTelemetry Operator chart version to deploy.
 fluentOperator:
