@@ -1,0 +1,26 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-components
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: cluster-components
+    repoURL: ghcr.io/sneakybugs
+    targetRevision: {{ .Values.config.componentsVersion }}
+    helm:
+      releaseName: cluster-components
+      valuesObject:
+        externalDNSWebhook:
+          apiEndpoint: {{ .Values.config.externalDNSWebhook.apiEndpoint }}
+          zones: {{ .Values.config.externalDNSWebhook.zones }}
+          serviceAccountID: {{ .Values.config.externalDNSWebhook.serviceAccountID }}
+          serviceAccountSecret: {{ .Values.config.externalDNSWebhook.serviceAccountSecret }}
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: default
+  syncPolicy:
+    automated:
+      selfHeal: true

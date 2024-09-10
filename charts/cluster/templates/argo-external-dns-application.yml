@@ -29,22 +29,22 @@ spec:
               - name: WEBHOOK_API_ENDPOINT
                 valueFrom:
                   configMapKeyRef:
-                    name: {{ .Values.config.externalDNSWebhook.configMapName }}
+                    name: cluster-components-external-dns-webhook
                     key: apiEndpoint
               - name: WEBHOOK_API_ID
                 valueFrom:
                   secretKeyRef:
-                    name: {{ .Values.config.externalDNSWebhook.secretName }}
+                    name: cluster-components-external-dns-webhook
                     key: id
               - name: WEBHOOK_API_SECRET
                 valueFrom:
                   secretKeyRef:
-                    name: {{ .Values.config.externalDNSWebhook.secretName }}
+                    name: cluster-components-external-dns-webhook
                     key: secret
               - name: WEBHOOK_ZONES
                 valueFrom:
                   configMapKeyRef:
-                    name: {{ .Values.config.externalDNSWebhook.configMapName }}
+                    name: cluster-components-external-dns-webhook
                     key: zones
             livenessProbe:
               httpGet:

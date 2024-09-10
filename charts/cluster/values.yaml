@@ -12,12 +12,15 @@ config:
   traefikVersion: 28.1.0 # Traefik version to deploy.
   certManagerVersion: v1.15.0 # Cert Manager version to deploy.
   openEBSVersion: 4.0.1 # OpenEBS version to deploy.
+  componentsVersion: 1.0.0
   externalDNSVersion: 1.14.5 # ExternalDNS version to deploy.
   externalDNSWebhook:
     repository: docker.houseofkummer.com/lior/home-dns/external-dns-provider # ExternalDNS webhook sidecar image repository.
     tag: 2.1.1 # ExternalDNS webhook sidecar image tag.
-    configMapName: cluster-components-external-dns-webhook # ExternalDNS webhook sidecar options ConfigMap.
-    secretName: cluster-components-external-dns-webhook # ExternalDNS webhook sidecar credentials Secret.
+    apiEndpoint: http://dns.infra.sneakybugs.com/v1 # DNS API server endpoint.
+    zones: example.com. # Comma separated list of zones managed by ExternalDNS.
+    serviceAccountID: example # DNS API service account ID, make sure it has read and edit permissions for all managed zones.
+    serviceAccountSecret: example # DNS API service account secret.
   controlPlane:
     replicas: 1 # Control plane node count.
     resources:
