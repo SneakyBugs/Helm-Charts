@@ -1,0 +1,28 @@
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-components
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: telemetry-system-components
+    repoURL: ghcr.io/sneakybugs
+    targetRevision: {{ .Values.telemetrySystemComponents.chartVersion }}
+    helm:
+      releaseName: telemetry-system-components
+      valuesObject:
+        telemetryIngress:
+          serviceAnnotations:
+            external-dns.alpha.kubernetes.io/hostname: {{ .Values.telemetrySystemComponents.otelCollectorHost }}
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

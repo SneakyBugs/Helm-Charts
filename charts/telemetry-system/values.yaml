@@ -21,3 +21,7 @@ tempo:
 
 loki:
   chartVersion: 6.10.0 # Grafana Loki chart version to deploy.
+
+telemetrySystemComponents:
+  chartVersion: 1.0.0
+  otelCollectorHost: otel.infra.sneakybugs.com
