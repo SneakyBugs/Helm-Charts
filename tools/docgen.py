@@ -32,7 +32,7 @@ def get_tags(repo: Path, contains: Optional[str]) -> list[str]:
 
 
 def switch(repo: Path, tag: str):
-    run(["git", "checkout", tag], cwd=repo.as_posix(), check=True)
+    run(["git", "checkout", "--force", tag], cwd=repo.as_posix(), check=True)
 
 
 def update_version(repo_path: Path, tag: str) -> str:
