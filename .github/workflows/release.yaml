@@ -18,4 +18,6 @@ jobs:
       - name: Login to OCI registry
         run: helm registry login --username "${{ github.actor }}" --password "${{ github.token }}" ghcr.io
       - name: Package and release chart
-        run: python3 tools/release.py "${{ github.ref_name }}" --registry "oci://ghcr.io/${{ github.repository_owner }}"
+        run: python3 tools/release.py "${{ github.ref_name }}" --registry "oci://ghcr.io/${OWNER,,}"
+        env:
+          OWNER: "${{ github.repository_owner }}"
