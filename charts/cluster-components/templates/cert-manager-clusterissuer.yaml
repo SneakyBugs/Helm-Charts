@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.certManager.clusterIssuerName }}
+  labels:
+    {{- include "cluster-components.labels" . | nindent 4 }}
+spec:
+  acme:
+    server: {{ if .Values.certManager.stagingEnvironment -}}
+      https://acme-staging-v02.api.letsencrypt.org/directory
+    {{- else -}}
+      https://acme-v02.api.letsencrypt.org/directory
+    {{- end }}
+    email: {{ .Values.certManager.cloudflareEmail }}
+    privateKeySecretRef:
+      name: letsencrypt-acme
+    solvers:
+      - dns01:
+          cloudflare:
+            email: {{ .Values.certManager.cloudflareEmail }}
+            apiTokenSecretRef:
+              name: {{ include "cluster-components.fullname" . }}-cert-manager-token
+              key: cloudflareToken
+        selector:
+          dnsZones: {{- toYaml .Values.certManager.cloudflareZones | nindent 12 }}

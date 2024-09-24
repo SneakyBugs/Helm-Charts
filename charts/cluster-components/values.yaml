@@ -12,3 +12,12 @@ externalDNSWebhook:
     - example.com.
   serviceAccountID: example # DNS API service account ID, make sure it has read and edit permissions for all managed zones.
   serviceAccountSecret: example # DNS API service account secret.
+
+certManager:
+  namespace: cert-manager # Namespace to deploy Cert Manager resources in.
+  stagingEnvironment: false # Use Let's Encrypt staging server when true.
+  clusterIssuerName: letsencrypt # Name of the created ClusterIssuer.
+  cloudflareToken: redacted # Cloudflare API token for ACME DNS challenge.
+  cloudflareEmail: redacted # Cloudflare email for ACME DNS challenge.
+  cloudflareZones: # List of DNS zones for ACME DNS challenge (without trailing dot).
+    - example.com

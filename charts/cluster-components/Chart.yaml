@@ -2,6 +2,7 @@ apiVersion: v2
 name: cluster-components
 description: |-
   Deploys configurations for addons included in the `cluster` chart.
+  Configures ExternalDNS and Cert Manager in tenant clusters.
 
   This chart must be installed in the tenant cluster.
 
