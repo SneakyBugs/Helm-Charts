@@ -7,4 +7,4 @@ metadata:
     {{- include "cluster-components.labels" . | nindent 4 }}
 data:
   apiEndpoint: {{ .Values.externalDNSWebhook.apiEndpoint }}
-  zones: {{ .Values.externalDNSWebhook.zones }}
+  zones: {{ join "," .Values.externalDNSWebhook.zones }}

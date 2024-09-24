@@ -8,6 +8,7 @@ fullnameOverride: "" # Override full release name.
 externalDNSWebhook:
   namespace: external-dns # Namespace to create and deploy ExternalDNS configurations in.
   apiEndpoint: http://dns.infra.sneakybugs.com/v1 # DNS API server endpoint.
-  zones: example.com. # Comma separated list of zones managed by ExternalDNS.
+  zones: # List of zones managed by ExternalDNS
+    - example.com.
   serviceAccountID: example # DNS API service account ID, make sure it has read and edit permissions for all managed zones.
   serviceAccountSecret: example # DNS API service account secret.
