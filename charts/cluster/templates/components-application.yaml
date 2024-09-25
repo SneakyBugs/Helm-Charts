@@ -9,15 +9,12 @@ spec:
   source:
     chart: cluster-components
     repoURL: ghcr.io/sneakybugs
-    targetRevision: {{ .Values.config.componentsVersion }}
+    targetRevision: {{ .Values.versions.components }}
     helm:
       releaseName: cluster-components
       valuesObject:
-        externalDNSWebhook:
-          apiEndpoint: {{ .Values.config.externalDNSWebhook.apiEndpoint }}
-          zones: {{ .Values.config.externalDNSWebhook.zones }}
-          serviceAccountID: {{ .Values.config.externalDNSWebhook.serviceAccountID }}
-          serviceAccountSecret: {{ .Values.config.externalDNSWebhook.serviceAccountSecret }}
+        externalDNSWebhook: {{- toYaml .Values.config.externalDNSWebhook | nindent 10 }}
+        certManager: {{- toYaml .Values.config.certManager | nindent 10 }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: default

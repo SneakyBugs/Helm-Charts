@@ -4,7 +4,7 @@ apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 metadata:
   name: {{ include "cluster.fullname" . }}
 spec:
-  replicas: {{ .Values.config.controlPlane.replicas }}
+  replicas: {{ .Values.nodes.controlPlane.replicas }}
   machineTemplate:
     infrastructureRef:
       kind: KubevirtMachineTemplate

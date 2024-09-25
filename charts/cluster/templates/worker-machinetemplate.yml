@@ -25,15 +25,15 @@ spec:
                     - ReadWriteOnce
                   resources:
                     requests:
-                      storage: {{ .Values.config.worker.resources.storage }}
+                      storage: {{ .Values.nodes.worker.resources.storage }}
           runStrategy: Always
           template:
             spec:
               domain:
                 cpu:
-                  cores: {{ .Values.config.worker.resources.cores }}
+                  cores: {{ .Values.nodes.worker.resources.cores }}
                 memory:
-                  guest: {{ .Values.config.worker.resources.memory }}
+                  guest: {{ .Values.nodes.worker.resources.memory }}
                 devices:
                   networkInterfaceMultiqueue: true
                   disks:

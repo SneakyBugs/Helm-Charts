@@ -9,7 +9,7 @@ spec:
   source:
     chart: traefik
     repoURL: https://traefik.github.io/charts
-    targetRevision: {{ .Values.config.traefikVersion }}
+    targetRevision: {{ .Values.versions.traefik }}
     helm:
       releaseName: traefik
       valuesObject:
@@ -19,7 +19,7 @@ spec:
               enabled: true
         service:
           annotations:
-            external-dns.alpha.kubernetes.io/hostname: {{ .Values.config.ingressHostname }}
+            external-dns.alpha.kubernetes.io/hostname: {{ .Values.config.traefik.ingressHostname }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: kube-system

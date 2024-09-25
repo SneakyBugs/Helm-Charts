@@ -2,25 +2,36 @@ nameOverride: "" # Override chart name.
 fullnameOverride: "" # Override full release name.
 argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 
+versions:
+  calico: v3.28.0 # Calico version to deploy.
+  certManager: v1.15.0 # Cert Manager version to deploy.
+  components: 1.0.0 # cluster-components chart version to deploy.
+  externalDNS: 1.14.5 # ExternalDNS version to deploy.
+  openEBS: 4.0.1 # OpenEBS version to deploy.
+  traefik: 28.1.0 # Traefik version to deploy.
+
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
   image: http://10.1.0.13:8000/rocky-9.qcow2 # Node image to use.
   version: 1.31.0 # Kubernetes version of the node image.
-  ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
-  calicoVersion: v3.28.0 # Calico version to deploy.
-  traefikVersion: 28.1.0 # Traefik version to deploy.
-  certManagerVersion: v1.15.0 # Cert Manager version to deploy.
-  openEBSVersion: 4.0.1 # OpenEBS version to deploy.
-  componentsVersion: 1.0.0
-  externalDNSVersion: 1.14.5 # ExternalDNS version to deploy.
-  externalDNSWebhook:
-    repository: docker.houseofkummer.com/lior/home-dns/external-dns-provider # ExternalDNS webhook sidecar image repository.
-    tag: 2.1.1 # ExternalDNS webhook sidecar image tag.
-    apiEndpoint: http://dns.infra.sneakybugs.com/v1 # DNS API server endpoint.
-    zones: example.com. # Comma separated list of zones managed by ExternalDNS.
-    serviceAccountID: example # DNS API service account ID, make sure it has read and edit permissions for all managed zones.
-    serviceAccountSecret: example # DNS API service account secret.
+
+  traefik:
+    ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
+
+  externalDNSWebhook: {} # Values for cluster-components chart externalDNSWebhook field.
+    # serviceAccountID: example
+    # serviceAccountSecret: example
+    # zones:
+    #   - example.com.
+
+  certManager: {} # Values for cluster-components chart certManager field.
+    # cloudflareToken: redacted
+    # cloudflareEmail: redacted
+    # cloudflareZones:
+    #   - example.com
+
+nodes:
   controlPlane:
     replicas: 1 # Control plane node count.
     resources:

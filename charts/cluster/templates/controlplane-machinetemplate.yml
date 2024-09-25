@@ -26,14 +26,14 @@ spec:
                     - ReadWriteOnce
                   resources:
                     requests:
-                      storage: {{ .Values.config.controlPlane.resources.storage }}
+                      storage: {{ .Values.nodes.controlPlane.resources.storage }}
           template:
             spec:
               domain:
                 cpu:
-                  cores: {{ .Values.config.controlPlane.resources.cores }}
+                  cores: {{ .Values.nodes.controlPlane.resources.cores }}
                 memory:
-                  guest: {{ .Values.config.controlPlane.resources.memory }}
+                  guest: {{ .Values.nodes.controlPlane.resources.memory }}
                 devices:
                   networkInterfaceMultiqueue: true
                   interfaces:

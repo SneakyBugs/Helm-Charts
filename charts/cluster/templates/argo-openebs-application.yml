@@ -9,7 +9,7 @@ spec:
   source:
     chart: openebs
     repoURL: https://openebs.github.io/openebs
-    targetRevision: {{ .Values.config.openEBSVersion }}
+    targetRevision: {{ .Values.versions.openEBS }}
     helm:
       releaseName: openebs
       valuesObject:
