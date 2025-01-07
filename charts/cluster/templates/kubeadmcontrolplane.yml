@@ -17,10 +17,4 @@ spec:
         dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
         serviceSubnet: {{ .Values.config.serviceSubnet }}
-    initConfiguration:
-      nodeRegistration:
-        criSocket: "/var/run/containerd/containerd.sock"
-    joinConfiguration:
-      nodeRegistration:
-        criSocket: "/var/run/containerd/containerd.sock"
   version: {{ .Values.config.version | quote }}

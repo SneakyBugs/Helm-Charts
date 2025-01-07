@@ -6,8 +6,24 @@ description: Deploys cluster with Cluster API and Kubevirt, including addons.
 
 ## Prerequisites
 
-Argo CD must be installed on the host cluster.
+The chart requires the following addons to be installed on the host cluster:
+
+- Argo CD
+- KubeVirt
+- Cluster API with Cluster API Provider KubeVirt
+- External Secrets
+- Kyverno with policies for generating Argo CD cluster secrets and External Secrets SecretStores
+
 Make sure to specify the namespace Argo CD is watching resources in using the `argocdNamespace` values option.
+
+The chart requires a virtual machine image built from the
+[Kubernetes image builder project](https://github.com/SneakyBugs/Kubernetes-Image-Builder/)
+available for download over HTTP(S).
+Make sure to set `config.image` to the url of the virtual machine image.
+
+Secrets containing Cloudflare and DNS API credentials on the host cluster are required.
+Make sure to create the secrets, specify the namespace of the secrets in
+`config.externalSecrets.remoteNamespace`, and authorize access to the secrets via `config.rbac`.
 
 ## Install
 

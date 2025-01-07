@@ -13,6 +13,7 @@ spec:
     helm:
       releaseName: cluster-components
       valuesObject:
+        externalSecrets: {{- toYaml .Values.config.externalSecrets | nindent 10 }}
         externalDNSWebhook: {{- toYaml .Values.config.externalDNSWebhook | nindent 10 }}
         certManager: {{- toYaml .Values.config.certManager | nindent 10 }}
   destination:

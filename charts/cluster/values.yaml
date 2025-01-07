@@ -5,31 +5,56 @@ argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 versions:
   calico: v3.28.0 # Calico version to deploy.
   certManager: v1.15.0 # Cert Manager version to deploy.
-  components: 1.0.0 # cluster-components chart version to deploy.
+  components: 3.0.0 # cluster-components chart version to deploy.
   externalDNS: 1.14.5 # ExternalDNS version to deploy.
+  externalSecrets: 0.12.1 # External Secrets version to deploy.
   openEBS: 4.0.1 # OpenEBS version to deploy.
   traefik: 28.1.0 # Traefik version to deploy.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
-  image: http://10.1.0.13:8000/rocky-9.qcow2 # Node image to use.
-  version: 1.31.0 # Kubernetes version of the node image.
+  image: http://vmi.infra.sneakybugs.com/images/rocky-9.5-k8s-1.32-de1c411-20250106.0.qcow2 # Node image to use.
+  version: 1.32.0 # Kubernetes version of the node image.
 
   traefik:
     ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
 
+  externalSecrets: {} # Values for cluster-components chart externalSecrets field.
+    # remoteNamespace: management
+
   externalDNSWebhook: {} # Values for cluster-components chart externalDNSWebhook field.
-    # serviceAccountID: example
-    # serviceAccountSecret: example
     # zones:
     #   - example.com.
+    # externalSecret:
+    #   remoteKey: external-dns
 
   certManager: {} # Values for cluster-components chart certManager field.
-    # cloudflareToken: redacted
-    # cloudflareEmail: redacted
     # cloudflareZones:
     #   - example.com
+    # cloudflareEmail: example@example.com
+    # externalSecret:
+    #   remoteKey: cert-manager
+
+  rbac:
+    namespace: secrets-example # Namespace for role in the management cluster.
+    rules: # Role rules for the namespace in the management cluster.
+      - apiGroups: [""]
+        resources:
+          - secrets
+        verbs:
+          - get
+          - list
+          - watch
+        resourceNames:
+          - cert-manager
+          - external-dns
+      - apiGroups:
+          - authorization.k8s.io
+        resources:
+          - selfsubjectrulesreviews
+        verbs:
+          - create
 
 nodes:
   controlPlane:

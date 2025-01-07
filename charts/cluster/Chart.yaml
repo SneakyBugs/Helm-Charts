@@ -10,7 +10,8 @@ description: |-
   - Traefik
   - OpenEBS
   - Cert Manager
-  - ExternalDNS
+  - External DNS
+  - External Secrets
 
 # A chart can be either an 'application' or a 'library' chart.
 #
