@@ -4,6 +4,8 @@ kind: Application
 metadata:
   name: {{ .Release.Namespace }}-{{ $name }}-system-traefik
   namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:

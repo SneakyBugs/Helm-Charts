@@ -3,6 +3,8 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   name: {{ $name }}-md-0
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 spec:
   clusterName: {{ $name }}
   replicas: {{ .Values.nodes.worker.replicas }}

@@ -4,4 +4,6 @@ kind: Role
 metadata:
   name: {{ .Release.Namespace }}-{{ $name }}
   namespace: {{ .Values.config.rbac.namespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 rules: {{- toYaml .Values.config.rbac.rules | nindent 2 }}

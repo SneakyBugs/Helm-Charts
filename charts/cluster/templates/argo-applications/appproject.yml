@@ -4,6 +4,8 @@ kind: AppProject
 metadata:
   name: {{ .Release.Namespace }}-{{ $name }}-system
   namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 spec:
   clusterResourceWhitelist:
     - group: '*'

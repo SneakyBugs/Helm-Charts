@@ -4,6 +4,8 @@ kind: RoleBinding
 metadata:
   name: {{ $name }}
   namespace: {{ .Values.config.rbac.namespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ include "cluster.fullname" . }}

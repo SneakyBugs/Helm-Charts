@@ -6,6 +6,7 @@ metadata:
     capk.cluster.x-k8s.io/template-kind: extra-resource
     cluster.x-k8s.io/cluster-name: {{ $name }}
     k8s-app: kubevirt-cloud-controller-manager
+    {{- include "cluster.labels" . | nindent 4 }}
   name: {{ $name }}-ccm
 spec:
   replicas: 1

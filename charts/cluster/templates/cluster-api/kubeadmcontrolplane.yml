@@ -3,6 +3,8 @@ kind: KubeadmControlPlane
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 metadata:
   name: {{ include "cluster.fullname" . }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.nodes.controlPlane.replicas }}
   machineTemplate:

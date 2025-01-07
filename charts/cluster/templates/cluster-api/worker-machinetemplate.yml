@@ -2,6 +2,8 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: KubevirtMachineTemplate
 metadata:
   name: {{ include "cluster.fullname" . }}-worker
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
 spec:
   template:
     spec:
