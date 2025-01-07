@@ -1,0 +1,28 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-otel-operator" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s-system" .Release.Namespace $name }}
+  source:
+    chart: opentelemetry-operator
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    targetRevision: {{ .Values.versions.openTelemetryOperator }}
+    helm:
+      releaseName: opentelemetry-operator
+      valuesObject:
+        manager:
+          collectorImage:
+            repository: "otel/opentelemetry-collector-contrib"
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

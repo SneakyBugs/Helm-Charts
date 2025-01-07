@@ -1,0 +1,24 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-prometheus-crds" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s-system" .Release.Namespace $name }}
+  source:
+    chart: prometheus-operator-crds
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{ .Values.versions.prometheusOperatorCRDs }}
+    helm:
+      releaseName: prometheus-operator-crds
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

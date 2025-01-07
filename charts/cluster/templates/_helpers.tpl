@@ -35,9 +35,8 @@ Common labels
 */}}
 {{- define "cluster.labels" -}}
 helm.sh/chart: {{ include "cluster.chart" . }}
-{{ include "cluster.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/name: {{ include "cluster.fullname" . }}
+app.kubernetes.io/part-of: {{ .Release.Namespace }}-{{ include "cluster.fullname" . }}
+app.kubernetes.io/version: {{ .Chart.Version | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}

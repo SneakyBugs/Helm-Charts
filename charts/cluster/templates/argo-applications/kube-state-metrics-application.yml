@@ -1,0 +1,28 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ printf "%s-%s-kube-state-metrics" .Release.Namespace $name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ printf "%s-%s-system" .Release.Namespace $name }}
+  source:
+    chart: kube-state-metrics
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{ .Values.versions.kubeStateMetrics }}
+    helm:
+      releaseName: kube-state-metrics
+      valuesObject:
+        prometheus:
+          monitor:
+            enabled: true
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

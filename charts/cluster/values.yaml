@@ -10,6 +10,12 @@ versions:
   externalSecrets: 0.12.1 # External Secrets version to deploy.
   openEBS: 4.0.1 # OpenEBS version to deploy.
   traefik: 28.1.0 # Traefik version to deploy.
+  fluentOperator: v2.9.0 # Fluent Operator chart version to deploy.
+  kubeStateMetrics: 5.20.0 # Kube State Metrics chart version to deploy.
+  openTelemetryOperator: 0.68.0 # OpenTelemetry Operator chart version to deploy.
+  prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
+  prometheusOperatorCRDs: 12.0.0 # Prometheus Operator CRDs chart version to deploy.
+  telemetryExporterComponents: 1.0.0 # telemetry-exporter-components chart version to deploy.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
@@ -19,6 +25,9 @@ config:
 
   traefik:
     ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
+
+  otlpExporter:
+    endpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
 
   externalSecrets: {} # Values for cluster-components chart externalSecrets field.
     # remoteNamespace: management
