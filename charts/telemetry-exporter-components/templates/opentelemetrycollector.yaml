@@ -6,10 +6,25 @@ metadata:
   labels:
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
-  mode: statefulset
+  mode: daemonset
+  serviceAccount: {{ $name }}-collector
+  securityContext:
+    runAsUser: 0
+  volumeMounts:
+    - mountPath: /var/log/
+      name: varlog
+      readOnly: true
+  volumes:
+    - hostPath:
+        path: /var/log
+        type: Directory
+      name: varlog
+  tolerations:
+    - operator: Exists
   targetAllocator:
     enabled: true
     serviceAccount: {{ $name }}-targetallocator
+    allocationStrategy: per-node
     prometheusCR:
       enabled: true
       serviceMonitorSelector: {}
@@ -23,11 +38,82 @@ spec:
       prometheus:
         config:
           scrape_configs: []
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        exclude:
+          # Exclude logs from all containers named otel-collector
+          - /var/log/pods/*/otc-container/*.log
+        start_at: end
+        include_file_path: true
+        include_file_name: false
+        operators:
+          # Parse CRI-O log format
+          - type: regex_parser
+            regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+            timestamp:
+              parse_from: attributes.time
+              layout_type: gotime
+              layout: '2006-01-02T15:04:05.999999999Z07:00'
+          # Extract container metadata from file path
+          - type: regex_parser
+            regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+            parse_from: attributes["log.file.path"]
+            cache:
+              size: 128
+          - type: move
+            from: attributes.log
+            to: body
+          - type: move
+            from: attributes.log
+            to: body
+          - type: move
+            from: attributes.namespace
+            to: resource["k8s.namespace.name"]
+          - type: move
+            from: attributes.pod_name
+            to: resource["k8s.pod.name"]
+          - type: move
+            from: attributes.container_name
+            to: resource["k8s.container.name"]
+          - type: move
+            from: attributes.stream
+            to: attributes["log.iostream"]
+          - type: move
+            from: attributes.restart_count
+            to: resource["k8s.container.restart_count"]
+          - type: remove
+            field: attributes.uid
+          - type: remove
+            field: attributes["log.file.path"]
 
     processors:
       batch: {}
+      k8sattributes:
+        extract:
+          labels:
+            - tag_name: service.name
+              key: app.kubernetes.io/name
+              from: pod
+            - tag_name: service.component
+              key: app.kubernetes.io/component
+              from: pod
+            - tag_name: service.instance
+              key: app.kubernetes.io/instance
+              from: pod
+            - tag_name: service.version
+              key: app.kubernetes.io/version
+              from: pod
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.name
+              - from: resource_attribute
+                name: k8s.namespace.name
 
     exporters:
+      debug:
+        verbosity: detailed
       otlp:
         endpoint: {{ .Values.exporterOTLPEndpoint }}
         tls:
@@ -40,6 +126,6 @@ spec:
           processors: [batch]
           exporters: [otlp]
         logs:
-          receivers: [otlp]
-          processors: [batch]
+          receivers: [filelog]
+          processors: [k8sattributes, batch]
           exporters: [otlp]
