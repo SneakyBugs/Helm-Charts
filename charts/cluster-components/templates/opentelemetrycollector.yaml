@@ -1,10 +1,11 @@
-{{ $name := include "telemetry-exporter-components.fullname" . -}}
+{{ $name := include "cluster-components.fullname" . -}}
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: {{ $name }}
+  namespace: {{ .Values.openTelemetry.namespace }}
   labels:
-    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
+    {{- include "cluster-components.labels" . | nindent 4 }}
 spec:
   mode: daemonset
   serviceAccount: {{ $name }}-collector
@@ -14,11 +15,17 @@ spec:
     - mountPath: /var/log/
       name: varlog
       readOnly: true
+    - mountPath: /queue
+      name: queue
   volumes:
     - hostPath:
         path: /var/log
         type: Directory
       name: varlog
+    - hostPath:
+        path: /var/lib/opentelemetry
+        type: DirectoryOrCreate
+      name: queue
   tolerations:
     - operator: Exists
   targetAllocator:
@@ -115,7 +122,7 @@ spec:
       debug:
         verbosity: detailed
       otlp:
-        endpoint: {{ .Values.exporterOTLPEndpoint }}
+        endpoint: {{ .Values.openTelemetry.exporterOTLPEndpoint }}
         tls:
           insecure: true
 
