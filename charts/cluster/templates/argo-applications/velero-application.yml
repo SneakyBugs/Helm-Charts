@@ -1,0 +1,55 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-system-velero
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: velero
+    repoURL: https://vmware-tanzu.github.io/helm-charts
+    targetRevision: {{ .Values.versions.velero }}
+    helm:
+      releaseName: velero
+      valuesObject:
+        initContainers:
+          - name: velero-plugin-for-aws
+            image: velero/velero-plugin-for-aws:v{{ .Values.versions.veleroPluginForAWS }}
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - mountPath: /target
+                name: plugins
+        snapshotsEnabled: false
+        deployNodeAgent: true
+        configuration:
+          defaultVolumeToFsBackup: true
+          backupStorageLocation:
+            - name: default
+              provider: aws
+              bucket: {{ .Values.config.velero.storage.bucket }}
+              prefix: {{ .Values.config.velero.storage.prefix | default (printf "%s:%s" .Release.Namespace $name) }}
+              default: true
+              accessMode: {{ .Values.config.velero.storage.accessMode }}
+              credential:
+                name: cluster-components-backup
+                key: veleroCredentials
+              config:
+                region: minio
+                s3ForcePathStyle: true
+                s3Url: {{ .Values.config.velero.storage.s3Url }}
+        schedules:
+          default:
+            schedule: {{ .Values.config.velero.backup.schedule | quote }}
+            template:
+              ttl: {{ .Values.config.velero.backup.ttl }}
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: velero
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

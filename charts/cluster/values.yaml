@@ -16,11 +16,13 @@ versions:
   prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
   prometheusOperatorCRDs: 12.0.0 # Prometheus Operator CRDs chart version to deploy.
   telemetryExporterComponents: 1.0.0 # telemetry-exporter-components chart version to deploy.
+  velero: 8.3.0 # Velero chart version to deploy.
+  veleroPluginForAWS: 1.11.1 # Velero AWS plugin version to deploy.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
-  image: http://vmi.infra.sneakybugs.com/images/rocky-9.5-k8s-1.32-de1c411-20250106.0.qcow2 # Node image to use.
+  image: https://vmi.infra.sneakybugs.com/images/rocky-9.5-k8s-1.32-de1c411-20250106.0.qcow2 # Node image to use.
   version: 1.32.0 # Kubernetes version of the node image.
 
   traefik:
@@ -32,7 +34,9 @@ config:
   externalSecrets: {} # Values for cluster-components chart externalSecrets field.
     # remoteNamespace: management
 
-  externalDNSWebhook: {} # Values for cluster-components chart externalDNSWebhook field.
+  externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
+    repository: docker.houseofkummer.com/lior/home-dns/external-dns-provider
+    tag: 2.1.0
     # zones:
     #   - example.com.
     # externalSecret:
@@ -45,8 +49,20 @@ config:
     # externalSecret:
     #   remoteKey: cert-manager
 
+  velero: # Velero backup configuration.
+    storage:
+      s3Url: https://vmi.infra.sneakybugs.com # S3 endpoint URL for backup storage.
+      bucket: backups # Bucket name for backup storage.
+      prefix: "" # Prefix to store backups in the S3 bucket, defaults to <namespace>:<cluster-name> if unspecified.
+      accessMode: ReadWrite # Backup location access mode, ReadWrite or ReadOnly.
+    backup:
+      schedule: "*/15 * * * *" # Cron schedule to perform backups at.
+      ttl: 720h # Time to keep backups.
+    externalSecret: {} # External secret used by Velero for S3 credentials.
+      # remoteKey: backup
+
   rbac:
-    namespace: secrets-example # Namespace for role in the management cluster.
+    namespace: tenant-secrets # Namespace for role in the management cluster.
     rules: # Role rules for the namespace in the management cluster.
       - apiGroups: [""]
         resources:
@@ -58,6 +74,7 @@ config:
         resourceNames:
           - cert-manager
           - external-dns
+          - backup
       - apiGroups:
           - authorization.k8s.io
         resources:

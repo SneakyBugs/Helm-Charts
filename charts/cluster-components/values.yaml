@@ -7,7 +7,7 @@ fullnameOverride: "" # Override full release name.
 
 externalSecrets:
   clusterSecretStoreName: management # Name of configured ClusterSecretStore.
-  remoteNamespace: secrets-example # Namespace in the remote cluster to fetch secrets from.
+  remoteNamespace: tenant-secrets # Namespace in the remote cluster to fetch secrets from.
   url: https://10.1.0.10:6443 # URL of the remote cluster Kubernetes API.
   serviceAccountTokenSecret:
     name: management-serviceaccount-token # Name of ServiceAccount token secret.
@@ -33,3 +33,9 @@ certManager:
   externalSecret:
     remoteKey: cert-manager # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
     cloudflareTokenProperty: cloudflareToken # Key of Cloudflare token in the remote secret.
+
+velero:
+  namespace: velero # Namespace to deploy Velero resources in.
+  externalSecret:
+    remoteKey: backup # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
+    veleroCredentialsProperty: veleroCredentials # Key of the Velero credentials config.
