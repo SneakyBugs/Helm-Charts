@@ -21,7 +21,7 @@ The chart requires a virtual machine image built from the
 available for download over HTTP(S).
 Make sure to set `config.image` to the url of the virtual machine image.
 
-Secrets containing Cloudflare and DNS API credentials on the host cluster are required.
+Secrets containing Cloudflare token, DNS API credentials, and MinIO bucket credentials on the host cluster are required.
 Make sure to create the secrets, specify the namespace of the secrets in
 `config.externalSecrets.remoteNamespace`, and authorize access to the secrets via `config.rbac`.
 

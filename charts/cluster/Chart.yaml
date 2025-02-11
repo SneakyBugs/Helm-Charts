@@ -13,6 +13,7 @@ description: |-
   - External DNS
   - External Secrets
   - OpenTelemetry Collector
+  - Velero
 
 # A chart can be either an 'application' or a 'library' chart.
 #
