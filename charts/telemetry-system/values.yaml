@@ -8,6 +8,7 @@ fullnameOverride: "" # Override full release name.
 argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 destinationCluster: cluster # Name of the destination cluster, must be in the same namespace as this chart is deployed in.
 destinationClusterDomain: cluster.local # Domain used for networking.dnsDomain in Kubeadm for the tenant cluster.
+certManagerClusterIssuerName: letsencrypt # Cert Manager ClusterIssuer to use for ingress certificates.
 
 kubePrometheusStack:
   chartVersion: 62.1.0 # Kube Prometheus Stack chart version to deploy.

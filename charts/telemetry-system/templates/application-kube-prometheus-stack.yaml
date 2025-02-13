@@ -67,14 +67,14 @@ spec:
             enabled: true
           ingress:
             enabled: true
-            # annotations:
-            #   cert-manager.io/cluster-issuer: letsencrypt
+            annotations:
+              cert-manager.io/cluster-issuer: {{ .Values.certManagerClusterIssuerName }}
             hosts:
               - {{ .Values.kubePrometheusStack.grafana.host }}
-            # tls:
-            #   - secretName: grafana-tls
-            #     hosts:
-            #       - {{ .Values.kubePrometheusStack.grafana.host }}
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - {{ .Values.kubePrometheusStack.grafana.host }}
 
 
   destination:
