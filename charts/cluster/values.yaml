@@ -24,6 +24,10 @@ config:
   image: https://vmi.infra.sneakybugs.com/images/rocky-9.5-k8s-1.32-de1c411-20250106.0.qcow2 # Node image to use.
   version: 1.32.0 # Kubernetes version of the node image.
 
+  imageRegistries:
+    - prefix: docker.io
+      location: oci.infra.sneakybugs.com/docker
+
   traefik:
     ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
 

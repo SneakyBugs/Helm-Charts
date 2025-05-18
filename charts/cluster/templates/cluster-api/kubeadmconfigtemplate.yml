@@ -10,3 +10,11 @@ spec:
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs: {}
+      files:
+        - path: /etc/containers/registries.conf
+          content: |-
+            {{- range .Values.config.imageRegistries }}
+            [[registry]]
+            prefix = {{ quote .prefix }}
+            location = {{ quote .location }}
+            {{- end }}
