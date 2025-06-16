@@ -39,7 +39,3 @@ velero:
   externalSecret:
     remoteKey: backup # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
     veleroCredentialsProperty: veleroCredentials # Key of the Velero credentials config.
-
-openTelemetry:
-  namespace: telemetry # Namespace to deploy OpenTelemetry resources in.
-  exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.

@@ -1,0 +1,10 @@
+# Default values for telemetry-exporter-components.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: "" # Override chart name.
+fullnameOverride: "" # Override full release name.
+
+openTelemetry:
+  namespace: telemetry # Namespace to deploy OpenTelemetry resources in.
+  exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.

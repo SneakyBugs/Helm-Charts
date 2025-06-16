@@ -1,0 +1,46 @@
+---
+description: Deploys resources related to the telemetry exporter.
+---
+
+{{ description }}
+
+## Prerequisites
+
+This chart requires an OpenTelemetry protocol endpoint for ingesting telemetry data.
+Make sure to set `openTelemetry.exporterOTLPEndpoint` to the ingest endpoint.
+
+## Install
+
+To install the chart:
+
+```
+helm install my-release oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
+```
+
+Assuming you have a `values.yaml` with your values overrides:
+
+## Upgrade
+
+To upgrade the chart:
+
+```
+helm upgrade my-release oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
+```
+
+Assuming you have a `values.yaml` with your values overrides:
+
+## Uninstall
+
+To uninstall the chart:
+
+```
+helm uninstall my-release
+```
+
+## Configuration
+
+| Parameter | Description | Default |
+| --------- | ----------- | ------- |
+{% for (param, comment, default) in values -%}
+| `{{ param }}` | {{ comment }} | {{ default }} |
+{% endfor -%}

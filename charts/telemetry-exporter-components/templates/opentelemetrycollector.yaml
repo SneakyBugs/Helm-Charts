@@ -1,11 +1,11 @@
-{{ $name := include "cluster-components.fullname" . -}}
+{{ $name := include "telemetry-exporter-components.fullname" . -}}
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: {{ $name }}
   namespace: {{ .Values.openTelemetry.namespace }}
   labels:
-    {{- include "cluster-components.labels" . | nindent 4 }}
+    {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
   mode: daemonset
   serviceAccount: {{ $name }}-collector
