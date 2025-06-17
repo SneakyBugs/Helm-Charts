@@ -19,4 +19,12 @@ spec:
         dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
         serviceSubnet: {{ .Values.config.serviceSubnet }}
+    files:
+      - path: /etc/containers/registries.conf
+        content: |
+          {{- range .Values.config.imageRegistries }}
+          [[registry]]
+          prefix = {{ quote .prefix }}
+          location = {{ quote .location }}
+          {{- end }}
   version: {{ .Values.config.version | quote }}

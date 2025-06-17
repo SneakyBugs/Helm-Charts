@@ -7,6 +7,9 @@ metadata:
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
+  ignoreDifferences:
+    - group: projectcalico.org
+      kind: FelixConfiguration
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
     chart: tigera-operator
@@ -14,11 +17,7 @@ spec:
     targetRevision: {{ .Values.versions.calico }}
     helm:
       releaseName: tigera-operator
-      values: >
-        defaultFelixConfiguration:
-          enabled: true
-          # Need to set this because the cluster is running inside another VXLAN overlay network.
-          vxlanPort: 8472
+      valuesObject:
         installation:
           calicoNetwork:
             bgp: Disabled
@@ -26,9 +25,11 @@ spec:
               - allowedUses:
                   - Workload
                   - Tunnel
+                assignmentMode: Automatic
                 blockSize: 26
                 cidr: {{ .Values.config.podSubnet }}
                 disableBGPExport: false
+                disableNewAllocations: false
                 encapsulation: VXLAN
                 name: default-ipv4-ippool
                 natOutgoing: Enabled

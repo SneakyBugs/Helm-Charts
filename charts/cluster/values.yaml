@@ -3,16 +3,17 @@ fullnameOverride: "" # Override full release name.
 argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 
 versions:
-  calico: v3.28.0 # Calico version to deploy.
+  calico: v3.30.1 # Calico version to deploy.
   certManager: v1.15.0 # Cert Manager version to deploy.
-  components: 4.0.0 # cluster-components chart version to deploy.
+  components: 5.0.0 # cluster-components chart version to deploy.
+  telemetryExporterComponents: 2.0.0
   externalDNS: 1.14.5 # ExternalDNS version to deploy.
   externalSecrets: 0.12.1 # External Secrets version to deploy.
   openEBS: 4.0.1 # OpenEBS version to deploy.
   traefik: 28.1.0 # Traefik version to deploy.
   fluentOperator: v2.9.0 # Fluent Operator chart version to deploy.
   kubeStateMetrics: 5.20.0 # Kube State Metrics chart version to deploy.
-  openTelemetryOperator: 0.68.0 # OpenTelemetry Operator chart version to deploy.
+  openTelemetryOperator: 0.90.3 # OpenTelemetry Operator chart version to deploy.
   prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
   prometheusOperatorCRDs: 12.0.0 # Prometheus Operator CRDs chart version to deploy.
   velero: 8.3.0 # Velero chart version to deploy.
@@ -21,12 +22,20 @@ versions:
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
-  image: https://vmi.infra.sneakybugs.com/images/rocky-9.5-k8s-1.32-de1c411-20250106.0.qcow2 # Node image to use.
-  version: 1.32.0 # Kubernetes version of the node image.
+  image: https://vmi.infra.sneakybugs.com/images/rocky-10.0-k8s-1.33-4632336-20250615.qcow2 # Node image to use.
+  version: 1.33.0 # Kubernetes version of the node image.
 
   imageRegistries:
     - prefix: docker.io
       location: oci.infra.sneakybugs.com/docker
+    - prefix: quay.io
+      location: oci.infra.sneakybugs.com/quay
+    - prefix: ghcr.io
+      location: oci.infra.sneakybugs.com/ghcr
+    - prefix: registry.k8s.io
+      location: oci.infra.sneakybugs.com/k8s
+    - prefix: oci.external-secrets.io
+      location: oci.infra.sneakybugs.com/external-secrets
 
   traefik:
     ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
@@ -34,8 +43,8 @@ config:
   otlpExporter:
     endpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
 
-  externalSecrets: {} # Values for cluster-components chart externalSecrets field.
-    # remoteNamespace: management
+  externalSecrets: # Values for cluster-components chart externalSecrets field.
+    remoteNamespace: tenant-secrets
 
   externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
     repository: docker.houseofkummer.com/lior/home-dns/external-dns-provider

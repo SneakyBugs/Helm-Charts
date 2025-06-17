@@ -42,6 +42,8 @@ spec:
                 s3Url: {{ .Values.config.velero.storage.s3Url }}
         schedules:
           default:
+            annotations:
+              argocd.argoproj.io/compare-options: IgnoreExtraneous
             schedule: {{ .Values.config.velero.backup.schedule | quote }}
             template:
               ttl: {{ .Values.config.velero.backup.ttl }}

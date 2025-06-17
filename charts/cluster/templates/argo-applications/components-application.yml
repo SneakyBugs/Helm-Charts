@@ -20,11 +20,15 @@ spec:
         certManager: {{- toYaml .Values.config.certManager | nindent 10 }}
         velero:
           externalSecret: {{- toYaml .Values.config.velero.externalSecret | nindent 12 }}
-        openTelemetry:
-          exporterOTLPEndpoint: {{ .Values.config.otlpExporter.endpoint }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: default
   syncPolicy:
     automated:
       selfHeal: true
+    retry:
+      limit: 100
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 30s

@@ -12,7 +12,7 @@ spec:
           kubeletExtraArgs: {}
       files:
         - path: /etc/containers/registries.conf
-          content: |-
+          content: |
             {{- range .Values.config.imageRegistries }}
             [[registry]]
             prefix = {{ quote .prefix }}

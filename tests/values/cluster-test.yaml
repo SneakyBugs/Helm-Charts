@@ -1,0 +1,10 @@
+config:
+  externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
+    zones:
+      - sneakybugs.com.
+
+  certManager: # Values for cluster-components chart certManager field.
+    stagingEnvironment: true
+    cloudflareZones:
+      - sneakybugs.com
+    cloudflareEmail: LKummer41@gmail.com

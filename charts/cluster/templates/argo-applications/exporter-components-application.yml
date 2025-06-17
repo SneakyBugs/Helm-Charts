@@ -2,30 +2,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ .Release.Namespace }}-{{ $name }}-system-cert-manager
+  name: {{ .Release.Namespace }}-{{ $name }}-exporter-components
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
-    chart: cert-manager
-    repoURL: https://charts.jetstack.io
-    targetRevision: {{ .Values.versions.certManager }}
+    chart: telemetry-exporter-components
+    repoURL: ghcr.io/sneakybugs
+    targetRevision: {{ .Values.versions.telemetryExporterComponents }}
     helm:
-      releaseName: cert-manager
+      releaseName: telemetry-exporter-components
       valuesObject:
-        crds:
-          enabled: true
-          keep: true
+        openTelemetry:
+          exporterOTLPEndpoint: {{ .Values.config.otlpExporter.endpoint }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
-    namespace: cert-manager
+    namespace: default
   syncPolicy:
     automated:
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
     retry:
       limit: 100
       backoff:
