@@ -1,3 +1,4 @@
+{{ if .Values.features.telemetryExporter -}}
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -22,3 +23,4 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+{{- end }}

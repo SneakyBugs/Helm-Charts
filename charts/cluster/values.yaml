@@ -5,13 +5,12 @@ argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 versions:
   calico: v3.30.1 # Calico version to deploy.
   certManager: v1.15.0 # Cert Manager version to deploy.
-  components: 5.0.0 # cluster-components chart version to deploy.
-  telemetryExporterComponents: 2.0.0
+  components: 5.1.0 # cluster-components chart version to deploy.
+  telemetryExporterComponents: 2.0.0 # telemetry-exporter-components chart version to deploy.
   externalDNS: 1.14.5 # ExternalDNS version to deploy.
   externalSecrets: 0.12.1 # External Secrets version to deploy.
   openEBS: 4.0.1 # OpenEBS version to deploy.
   traefik: 28.1.0 # Traefik version to deploy.
-  fluentOperator: v2.9.0 # Fluent Operator chart version to deploy.
   kubeStateMetrics: 5.20.0 # Kube State Metrics chart version to deploy.
   openTelemetryOperator: 0.90.3 # OpenTelemetry Operator chart version to deploy.
   prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
@@ -19,6 +18,11 @@ versions:
   velero: 8.3.0 # Velero chart version to deploy.
   veleroPluginForAWS: 1.11.1 # Velero AWS plugin version to deploy.
   kro: 0.3.0 # Kro version to deploy.
+
+features:
+  backups: true # Enable Velero backups when true.
+  telemetryExporter: true # Enable OpenTelemetry exporter when true.
+  kro: true # Enable Kro when true.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.

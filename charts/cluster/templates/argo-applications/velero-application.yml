@@ -1,3 +1,4 @@
+{{ if .Values.features.backups -}}
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -55,3 +56,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+{{- end }}

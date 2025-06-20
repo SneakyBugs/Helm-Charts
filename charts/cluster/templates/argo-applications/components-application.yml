@@ -19,6 +19,7 @@ spec:
         externalDNSWebhook: {{- toYaml .Values.config.externalDNSWebhook | nindent 10 }}
         certManager: {{- toYaml .Values.config.certManager | nindent 10 }}
         velero:
+          enabled: {{ .Values.features.backups }}
           externalSecret: {{- toYaml .Values.config.velero.externalSecret | nindent 12 }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
