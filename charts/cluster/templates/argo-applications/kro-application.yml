@@ -1,0 +1,24 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-kro
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: kro
+    repoURL: ghcr.io/kro-run/kro
+    targetRevision: {{ .Values.versions.kro }}
+    helm:
+      releaseName: kro
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: kro
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
