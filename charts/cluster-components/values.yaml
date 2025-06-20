@@ -35,6 +35,7 @@ certManager:
     cloudflareTokenProperty: cloudflareToken # Key of Cloudflare token in the remote secret.
 
 velero:
+  enabled: true # Create Velero backup related resources when true.
   namespace: velero # Namespace to deploy Velero resources in.
   externalSecret:
     remoteKey: backup # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
