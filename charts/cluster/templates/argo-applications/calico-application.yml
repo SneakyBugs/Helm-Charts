@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -10,6 +11,10 @@ spec:
   ignoreDifferences:
     - group: projectcalico.org
       kind: FelixConfiguration
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/preserveUnknownFields
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
     chart: tigera-operator
