@@ -1,3 +1,6 @@
+features:
+  components: false
+
 config:
   externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
     zones:

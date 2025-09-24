@@ -1,0 +1,12 @@
+gateway:
+  hostname: "*.example.com"
+
+externalDNSWebhook:
+  zones:
+    - sneakybugs.com.
+
+certManager:
+  stagingEnvironment: true
+  cloudflareZones:
+    - sneakybugs.com
+  cloudflareEmail: LKummer41@gmail.com

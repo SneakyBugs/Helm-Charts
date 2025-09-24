@@ -11,10 +11,11 @@ versions:
   externalSecrets: 0.12.1 # External Secrets version to deploy.
   openEBS: 4.0.1 # OpenEBS version to deploy.
   traefik: 28.1.0 # Traefik version to deploy.
+  envoyGateway: 1.4.2 # Envoy Gateway version to deploy.
   kubeStateMetrics: 5.20.0 # Kube State Metrics chart version to deploy.
   openTelemetryOperator: 0.90.3 # OpenTelemetry Operator chart version to deploy.
   prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
-  prometheusOperatorCRDs: 12.0.0 # Prometheus Operator CRDs chart version to deploy.
+  prometheusOperatorCRDs: 23.0.0 # Prometheus Operator CRDs chart version to deploy.
   velero: 8.3.0 # Velero chart version to deploy.
   veleroPluginForAWS: 1.11.1 # Velero AWS plugin version to deploy.
   kro: 0.3.0 # Kro version to deploy.
@@ -23,6 +24,7 @@ features:
   backups: true # Enable Velero backups when true.
   telemetryExporter: true # Enable OpenTelemetry exporter when true.
   kro: true # Enable Kro when true.
+  components: true # Disable cluster-components chart when false.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
@@ -44,6 +46,9 @@ config:
 
   traefik:
     ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
+
+  gateway:
+    hostname: '*.infra.sneakybugs.com'
 
   otlpExporter:
     endpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.

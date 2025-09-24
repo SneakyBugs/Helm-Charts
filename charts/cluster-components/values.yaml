@@ -5,6 +5,12 @@
 nameOverride: "" # Override chart name.
 fullnameOverride: "" # Override full release name.
 
+gateway:
+  gatewayClassName: envoy
+  name: external
+  namespace: envoy
+  hostname: "*.example.com"
+
 externalSecrets:
   clusterSecretStoreName: management # Name of configured ClusterSecretStore.
   remoteNamespace: tenant-secrets # Namespace in the remote cluster to fetch secrets from.
