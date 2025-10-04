@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -19,8 +20,8 @@ spec:
           - service
           - ingress
           - traefik-proxy
-        extraArgs:
-          - --traefik-disable-legacy
+          - gateway-grpcroute
+          - gateway-httproute
         provider:
           name: webhook
           webhook:
@@ -28,6 +29,9 @@ spec:
               repository: {{ .Values.config.externalDNSWebhook.repository }}
               tag: {{ .Values.config.externalDNSWebhook.tag }}
             env:
+              # TODO Remove after debugging the External DNS issue.
+              - name: WEBHOOK_VERBOSE
+                value: "true"
               - name: WEBHOOK_API_ENDPOINT
                 valueFrom:
                   configMapKeyRef:
@@ -51,12 +55,21 @@ spec:
             livenessProbe:
               httpGet:
                 path: /-/liveness
+                port: 8888
             readinessProbe:
               httpGet:
                 path: /-/readiness
+                port: 8888
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: external-dns
   syncPolicy:
     automated:
       selfHeal: true
+      prune: true
+    retry:
+      limit: -1
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 60s

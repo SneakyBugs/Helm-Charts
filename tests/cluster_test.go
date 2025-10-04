@@ -15,8 +15,8 @@ import (
 
 func TestCluster(t *testing.T) {
 	t.Parallel()
-	namespace := fmt.Sprintf("cluster-test-%s", strings.ToLower(random.UniqueId()))
 
+	namespace := fmt.Sprintf("cluster-test-%s", strings.ToLower(random.UniqueId()))
 	existingNamespace, useExistingNamespace := os.LookupEnv("TEST_USE_EXISTING_NAMESPACE")
 	if useExistingNamespace {
 		namespace = existingNamespace
@@ -53,14 +53,14 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) fu
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, fmt.Sprintf("%s-cluster", releaseName))
 	defer closer()
 
-	retry.DoWithRetry(t, "attempt to install cluster-components", 6*2, 10*time.Second, func() (string, error) {
+	retry.DoWithRetry(t, "attempt to install cluster-components", 6*20, 10*time.Second, func() (string, error) {
 		err := helm.UpgradeE(t, &helm.Options{
 			ValuesFiles:    []string{"values/cluster-components.yaml"},
 			KubectlOptions: tko,
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},
 			},
-		}, "../charts/cluster-components", releaseName)
+		}, "../charts/cluster-components", "cluster-components")
 		if err != nil {
 			return "", err
 		}
@@ -68,7 +68,6 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) fu
 	})
 
 	return func() {
-
 		defer helm.Delete(t, &helm.Options{
 			KubectlOptions: ko,
 		}, releaseName, true)

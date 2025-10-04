@@ -1,0 +1,145 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-prometheus-operator
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: kube-prometheus-stack
+    repoURL: ghcr.io/prometheus-community/charts
+    targetRevision: {{ .Values.versions.kubePrometheusStack }}
+    helm:
+      releaseName: kube-prometheus-stack
+      valuesObject:
+        fullnameOverride: prometheus-operator
+        alertmanager:
+          enabled: false
+        prometheus:
+          enabled: false
+        crds:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        kubernetesServiceMonitors:
+          enabled: false
+        kubelet:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        coreDns:
+          enabled: false
+        kubeEtcd:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        nodeExporter:
+          enabled: false
+        grafana:
+          enabled: false
+        kubeApiServer:
+          enabled: false
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: prometheus-operator
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: -1
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 60s
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-prometheus
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: kube-prometheus-stack
+    repoURL: ghcr.io/prometheus-community/charts
+    targetRevision: {{ .Values.versions.kubePrometheusStack }}
+    helm:
+      releaseName: kube-prometheus-stack
+      valuesObject:
+        fullnameOverride: prometheus
+        prometheusOperator:
+          enabled: false
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            enableRemoteWriteReceiver: true
+            serviceMonitorSelector:
+              matchLabels:
+                prometheus: in-cluster
+            podMonitorSelector:
+              matchLabels:
+                prometheus: in-cluster
+            storageSpec:
+              # TODO Parameterize storage.
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: 10Gi
+                  volumeMode: Filesystem
+                  accessModes:
+                    - ReadWriteOnce
+        crds:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        kubernetesServiceMonitors:
+          enabled: false
+        kubelet:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        coreDns:
+          enabled: false
+        kubeEtcd:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        nodeExporter:
+          enabled: false
+        grafana:
+          enabled: false
+        kubeApiServer:
+          enabled: false
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: telemetry-system
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: -1
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 60s

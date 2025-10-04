@@ -1,5 +1,5 @@
 gateway:
-  hostname: "*.example.com"
+  hostname: "*.infra.sneakybugs.com"
 
 externalDNSWebhook:
   zones:

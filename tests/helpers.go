@@ -2,7 +2,12 @@ package tests
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -122,4 +127,51 @@ func checkAllSubApplicationsAreSynced(t *testing.T, ko *k8s.KubectlOptions, dyn 
 
 		return "", err
 	})
+}
+
+func getHTTPClientWithStagingCAs(t *testing.T) *http.Client {
+	cas := fetchLetsEncryptStagingCAs(t)
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: cas,
+			},
+		},
+	}
+}
+
+func fetchLetsEncryptStagingCAs(t *testing.T) *x509.CertPool {
+	cp := x509.NewCertPool()
+	certs := fetchAndDecodePEM(t, "https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem")
+	certs = append(certs, fetchAndDecodePEM(t, "https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x2.pem")...)
+	for _, cert := range certs {
+		cp.AddCert(cert)
+	}
+	return cp
+}
+
+func fetchAndDecodePEM(t *testing.T, url string) []*x509.Certificate {
+	resp, err := http.Get(url)
+	if err != nil {
+		t.Fatalf("Expected no error fetching cert from %s, got %v", url, err)
+	}
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			t.Errorf("Expected no error closing response body, got %v", err)
+		}
+	}()
+	pemBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Expected no error reading response, got %v", err)
+	}
+	certs := []*x509.Certificate{}
+	for block, rest := pem.Decode(pemBytes); block != nil; block, rest = pem.Decode(rest) {
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			t.Fatalf("Expected no error parsing x509 certificate, got %v", err)
+		}
+		certs = append(certs, cert)
+	}
+	return certs
 }

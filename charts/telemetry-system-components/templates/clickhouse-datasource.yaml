@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/grafana.integreatly.org/grafanadatasource_v1beta1.json
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: {{ include "telemetry-system-components.fullname" . }}-clickhouse
+  labels:
+    {{- include "telemetry-system-components.labels" . | nindent 4 }}
+spec:
+  valuesFrom:
+    - targetPath: secureJsonData.tlsCACert
+      valueFrom:
+        secretKeyRef:
+          key: ca.crt
+          name: logs-grafana-tls
+    - targetPath: secureJsonData.tlsClientCert
+      valueFrom:
+        secretKeyRef:
+          key: tls.crt
+          name: logs-grafana-tls
+    - targetPath: secureJsonData.tlsClientKey
+      valueFrom:
+        secretKeyRef:
+          key: tls.key
+          name: logs-grafana-tls
+  datasource:
+    name: Logs
+    type: vertamedia-clickhouse-datasource
+    access: proxy
+    url: https://clickhouse-logs.telemetry-system.svc.cluster.local
+    jsonData:
+      tlsAuth: true
+      tlsAuthWithCACert: true
+      useYandexCloudAuthorization: true
+      xClickHouseSSLCertificateAuth: true
+      xHeaderUser: grafana
+      dataSourceUrl: https://clickhouse-logs.telemetry-system.svc.cluster.local
+    secureJsonData:
+      tlsCACert: ${ca.crt}
+      tlsClientCert: ${tls.crt}
+      tlsClientKey: ${tls.key}
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/component: grafana
+      {{- include "telemetry-system-components.selector-labels" . | nindent 6 }}
+  plugins:
+    - name: vertamedia-clickhouse-datasource
+      version: 3.4.4

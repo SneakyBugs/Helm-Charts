@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/issuer_v1.json
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned
+  namespace: telemetry-system
+spec:
+  selfSigned: {}
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-logs-root
+  namespace: telemetry-system
+spec:
+  isCA: true
+  commonName: clickhouse-logs.telemetry-system.cluster.local/root
+  secretName: logs-root-tls
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  issuerRef:
+    name: selfsigned
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/issuer_v1.json
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: logs
+  namespace: telemetry-system
+spec:
+  ca:
+    secretName: logs-root-tls
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-logs-server
+  namespace: telemetry-system
+spec:
+  commonName: clickhouse-logs.telemetry-system.svc.cluster.local/server
+  dnsNames:
+    - clickhouse-logs.telemetry-system.svc.cluster.local
+  uris:
+    - spiffe://clickhouse-logs.telemetry-system.svc.cluster.local/server
+  secretName: logs-server-tls
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - server auth
+  issuerRef:
+    name: logs
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-logs-grafana
+  namespace: telemetry-system
+spec:
+  commonName: clickhouse-logs.telemetry-system.svc.cluster.local/grafana
+  uris:
+    - spiffe://clickhouse-logs.telemetry-system.svc.cluster.local/grafana
+  secretName: logs-grafana-tls
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - client auth
+  issuerRef:
+    name: logs
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-logs-collector
+  namespace: telemetry-system
+spec:
+  commonName: clickhouse-logs.telemetry-system.svc.cluster.local/collector
+  uris:
+    - spiffe://clickhouse-logs.telemetry-system.svc.cluster.local/collector
+  secretName: logs-collector-tls
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - client auth
+  issuerRef:
+    name: logs
+    kind: Issuer

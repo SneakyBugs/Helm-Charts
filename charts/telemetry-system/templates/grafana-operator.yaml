@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
+{{ $name := include "telemetry-system.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-grafana
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "telemetry-system.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}
+  source:
+    chart: grafana-operator
+    repoURL: ghcr.io/grafana/helm-charts
+    targetRevision: {{ .Values.versions.grafanaOperator }}
+    helm:
+      releaseName: grafana-operator
+      valuesObject: {}
+  destination:
+    name: {{ .Release.Namespace }}/{{ .Values.destinationCluster }}
+    namespace: grafana-operator
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: -1
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 60s

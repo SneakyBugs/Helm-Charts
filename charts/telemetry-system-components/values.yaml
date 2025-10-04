@@ -4,10 +4,27 @@
 nameOverride: "" # Override chart name.
 fullnameOverride: "" # Override full release name.
 
-telemetryIngress:
-  serviceAnnotations: # Annotations to add to the OpenTelemetry Collector LoadBalancer service.
-    external-dns.alpha.kubernetes.io/hostname: otel.infra.sneakybugs.com
+otel:
+  service:
+    annotations: # Annotations to add to the OpenTelemetry Collector LoadBalancer service.
+      external-dns.alpha.kubernetes.io/hostname: otel.infra.sneakybugs.com
 
-lokiEndpoint: http://loki:3100/loki/api/v1/push # Loki endpoint to push logs to.
-podMonitorLabels: # Labels to add to the PodMonitor used for scraping aggregated metrics from OpenTelemetry Collector to Prometheus.
-  prometheus: in-cluster
+prometheusRemoteWriteEndpoint: http://prometheus-prometheus.telemetry-system:9090/api/v1/write
+
+grafana:
+  # TODO Insert this everywhere and split Grafana to separate namespace.
+  namespace: telemetry-system
+  httproute:
+    parentRefs:
+      - name: external
+        namespace: envoy
+    hostname: grafana.infra.sneakybugs.com
+
+clickhouse:
+  namespace: clickhouse-operator
+  pvcTemplateSpec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi

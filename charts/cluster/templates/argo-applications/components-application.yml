@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
 {{ if .Values.features.components -}}
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
@@ -29,10 +30,11 @@ spec:
   syncPolicy:
     automated:
       selfHeal: true
+      prune: true
     retry:
-      limit: 100
+      limit: -1
       backoff:
-        duration: 5s
+        duration: 15s
         factor: 2
-        maxDuration: 30s
+        maxDuration: 60s
 {{- end }}

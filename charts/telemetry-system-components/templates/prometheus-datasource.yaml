@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/grafana.integreatly.org/grafanadatasource_v1beta1.json
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: {{ include "telemetry-system-components.fullname" . }}-prometheus
+  labels:
+    {{- include "telemetry-system-components.labels" . | nindent 4 }}
+spec:
+  datasource:
+    access: proxy
+    type: prometheus
+    jsonData:
+      timeInterval: 5s
+    name: Prometheus
+    url: http://prometheus-prometheus.telemetry-system.svc.cluster.local:9090
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}

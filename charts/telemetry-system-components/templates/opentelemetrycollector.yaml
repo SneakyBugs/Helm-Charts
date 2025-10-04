@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/opentelemetry.io/opentelemetrycollector_v1beta1.json
 {{ $name := include "telemetry-system-components.fullname" . -}}
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
@@ -7,6 +8,14 @@ metadata:
     {{- include "telemetry-system-components.labels" . | nindent 4 }}
 spec:
   mode: deployment
+  volumeMounts:
+    - mountPath: /etc/certificate
+      name: certificate
+      readOnly: true
+  volumes:
+    - name: certificate
+      secret:
+        secretName: logs-collector-tls
   config:
     receivers:
       otlp:
@@ -16,30 +25,30 @@ spec:
 
     processors:
       batch: {}
-      attributes:
-        actions:
-          - action: insert
-            key: loki.format
-            value: raw
-          - action: insert
-            key: loki.attribute.labels
-            value: k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.host, k8s.cluster.name, service.name, service.instance.id, service.namespace, service.component
 
     exporters:
-      # Yeah the Loki exporter is deprecated, but the OTLP endpoint in Loki refuses to index labels correctly.
-      # Should switch to otlphttp exporter for Loki when they get it actually working and I'm not one of the first users.
-      loki:
-        endpoint: {{ .Values.lokiEndpoint }}
-      prometheus:
-        endpoint: 0.0.0.0:9000
+      clickhouse:
+        endpoint: https://clickhouse-logs.telemetry-system.svc.cluster.local
+        database: otel
+        ttl: 720h
+        username: collector
+        tls:
+          ca_file: /etc/certificate/ca.crt
+          cert_file: /etc/certificate/tls.crt
+          key_file: /etc/certificate/tls.key
+        logs_table_name: otel_logs
+      prometheusremotewrite:
+        endpoint: {{ .Values.prometheusRemoteWriteEndpoint }}
+        resource_to_telemetry_conversion:
+          enabled: true
 
     service:
       pipelines:
         metrics:
           receivers: [otlp]
           processors: [batch]
-          exporters: [prometheus]
+          exporters: [prometheusremotewrite]
         logs:
           receivers: [otlp]
-          processors: [batch, attributes]
-          exporters: [loki]
+          processors: [batch]
+          exporters: [clickhouse]

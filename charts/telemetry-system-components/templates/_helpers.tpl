@@ -35,10 +35,14 @@ Common labels
 */}}
 {{- define "telemetry-system-components.labels" -}}
 helm.sh/chart: {{ include "telemetry-system-components.chart" . }}
-app.kubernetes.io/name: {{ include "telemetry-system-components.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "telemetry-system-components.selector-labels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{- define "telemetry-system-components.selector-labels" -}}
+app.kubernetes.io/name: {{ include "telemetry-system-components.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
