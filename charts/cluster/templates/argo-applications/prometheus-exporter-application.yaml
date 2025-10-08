@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-prometheus-exporter
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  project: {{ .Release.Namespace }}-{{ $name }}-system
+  source:
+    chart: kube-prometheus-stack
+    repoURL: ghcr.io/prometheus-community/charts
+    targetRevision: {{ .Values.versions.kubePrometheusStack }}
+    helm:
+      releaseName: kube-prometheus-stack
+      valuesObject:
+        fullnameOverride: exporter
+        defaultRules:
+          create: false
+        prometheusOperator:
+          enabled: false
+        alertmanager:
+          enabled: false
+        prometheus:
+          enabled: false
+        crds:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        kubernetesServiceMonitors:
+          enabled: true
+        kubelet:
+          enabled: true
+        kubeControllerManager:
+          enabled: true
+        coreDns:
+          enabled: true
+        kubeEtcd:
+          enabled: true
+        kubeScheduler:
+          enabled: true
+        kubeProxy:
+          # Couldn't get it to work.
+          enabled: false
+        nodeExporter:
+          enabled: false
+        grafana:
+          enabled: false
+        kubeApiServer:
+          enabled: true
+  destination:
+    name: {{ .Release.Namespace }}/{{ $name }}
+    namespace: telemetry
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: -1
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 60s

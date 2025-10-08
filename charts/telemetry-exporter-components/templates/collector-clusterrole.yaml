@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 rules:
+  # For Kubernetes metadata processor.
   - apiGroups: [""]
     resources: ["pods", "namespaces", "nodes"]
     verbs: ["get", "watch", "list"]
@@ -14,3 +15,9 @@ rules:
   - apiGroups: ["extensions"]
     resources: ["replicasets"]
     verbs: ["get", "list", "watch"]
+  # For scraping metrics.
+  - apiGroups: [""]
+    resources: ["nodes/metrics"]
+    verbs: ["get"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]

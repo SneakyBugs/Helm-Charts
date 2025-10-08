@@ -13,6 +13,7 @@ versions:
   traefik: 28.1.0 # Traefik version to deploy.
   envoyGateway: 1.4.2 # Envoy Gateway version to deploy.
   kubeStateMetrics: 5.20.0 # Kube State Metrics chart version to deploy.
+  kubePrometheusStack: 77.11.0 # kube-prometheus-stack chart version to deploy.
   openTelemetryOperator: 0.97.0 # OpenTelemetry Operator chart version to deploy.
   prometheusNodeExporter: 4.36.0 # Node exporter chart version to deploy.
   prometheusOperatorCRDs: 23.0.0 # Prometheus Operator CRDs chart version to deploy.
@@ -25,6 +26,7 @@ features:
   telemetryExporter: true # Enable OpenTelemetry exporter when true.
   kro: true # Enable Kro when true.
   components: true # Disable cluster-components chart when false.
+  exporterComponents: true # Disable telemetry-exporter-components chart when false.
 
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.

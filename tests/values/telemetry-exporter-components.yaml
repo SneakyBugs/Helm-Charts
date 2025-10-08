@@ -1,0 +1,2 @@
+openTelemetry:
+  exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317

@@ -67,6 +67,20 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) fu
 		return "", nil
 	})
 
+	retry.DoWithRetry(t, "attempt to install telemetry-exporter-components", 6*20, 10*time.Second, func() (string, error) {
+		err := helm.UpgradeE(t, &helm.Options{
+			ValuesFiles:    []string{"values/telemetry-exporter-components.yaml"},
+			KubectlOptions: tko,
+			ExtraArgs: map[string][]string{
+				"upgrade": []string{"--install", "--wait", "--take-ownership"},
+			},
+		}, "../charts/telemetry-exporter-components", "telemetry-exporter-components")
+		if err != nil {
+			return "", err
+		}
+		return "", nil
+	})
+
 	return func() {
 		defer helm.Delete(t, &helm.Options{
 			KubectlOptions: ko,

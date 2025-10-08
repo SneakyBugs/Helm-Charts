@@ -1,5 +1,6 @@
 features:
   components: false
+  exporterComponents: false
 
 config:
   externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.

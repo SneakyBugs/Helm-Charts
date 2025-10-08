@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
-{{ if .Values.features.telemetryExporter -}}
+{{ if and .Values.features.telemetryExporter .Values.features.exporterComponents -}}
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application

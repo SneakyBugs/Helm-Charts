@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/controlplane.cluster.x-k8s.io/kubeadmcontrolplane_v1beta1.json
 {{ $name := include "cluster.fullname" . -}}
 kind: KubeadmControlPlane
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
@@ -15,11 +16,32 @@ spec:
       namespace: {{ .Release.Namespace }}
   kubeadmConfigSpec:
     clusterConfiguration:
+      controllerManager:
+        extraArgs:
+          bind-address: 0.0.0.0
+      scheduler:
+        extraArgs:
+          bind-address: 0.0.0.0
+      etcd:
+        local:
+          extraArgs:
+            listen-metrics-urls: http://0.0.0.0:2381
       networking:
         dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
         serviceSubnet: {{ .Values.config.serviceSubnet }}
     files:
+      - path: /etc/kubernetes/kubelet/config.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          authentication:
+            webhook:
+              enabled: true
+          authorization:
+            mode: Webhook
       - path: /etc/containers/registries.conf
         content: |
           {{- range .Values.config.imageRegistries }}

@@ -88,6 +88,27 @@ func TestTelemetrySystem(t *testing.T) {
 			return "", testClickHouseLogsAreReceived(t, httpClient, tko)
 		})
 	})
+
+	t.Run("Prometheus contains metrics from kube-scheduler exporter", func(t *testing.T) {
+		t.Parallel()
+		retry.DoWithRetry(t, "Prometheus contains metrics from kube-scheduler exporter", 6*20, 10*time.Second, func() (string, error) {
+			return "", testPrometheusContainsKubeSchedulerMetrics(t, httpClient, tko)
+		})
+	})
+
+	t.Run("Prometheus contains metrics from kube-controller-manager exporter", func(t *testing.T) {
+		t.Parallel()
+		retry.DoWithRetry(t, "Prometheus contains metrics kube-controller-manager exporter", 6*20, 10*time.Second, func() (string, error) {
+			return "", testPrometheusContainsKubeControllerManagerMetrics(t, httpClient, tko)
+		})
+	})
+
+	t.Run("Prometheus contains metrics from kubelet exporter", func(t *testing.T) {
+		t.Parallel()
+		retry.DoWithRetry(t, "Prometheus contains metrics kubelet exporter", 6*20, 10*time.Second, func() (string, error) {
+			return "", testPrometheusContainsKubeControllerManagerMetrics(t, httpClient, tko)
+		})
+	})
 }
 
 func testGrafanaDatasources(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
@@ -319,6 +340,150 @@ func testClickHouseLogsAreReceived(t *testing.T, c *http.Client, tenantKubectlOp
 
 	if len(result.Frames[0].Data.Values[0]) <= 1 {
 		return fmt.Errorf("expected result length to be at least 1, got %d", len(result.Frames[0].Data.Values[0]))
+	}
+
+	return nil
+}
+
+func testPrometheusContainsKubeSchedulerMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	if err != nil {
+		return fmt.Errorf("unexpected error getting datasource: %v", err)
+	}
+
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+		To:   "now",
+		From: "now-1s",
+		Queries: []GrafanaDataSourceQuery{
+			{
+				Datasource: GrafanaDataSource{
+					UID: datasourceUID,
+				},
+				Expresion: "sum(scheduler_pending_pods)",
+				RefID:     "A",
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("unexpected error querying datasource: %v", err)
+	}
+
+	result, ok := queryResponse.Results["A"]
+	if !ok {
+		return fmt.Errorf("expected query response to contain result with ref 'A'")
+	}
+
+	if result.Status != 200 {
+		return fmt.Errorf("expected query status to be 200, got %d", result.Status)
+	}
+
+	if len(result.Frames) != 1 {
+		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
+	}
+
+	v, ok := result.Frames[0].Data.Values[1][0].(float64)
+	if !ok {
+		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
+	}
+
+	if 10 < v {
+		return fmt.Errorf("expected less than 10 pending pods, got %f", v)
+	}
+
+	return nil
+}
+
+func testPrometheusContainsKubeControllerManagerMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	if err != nil {
+		return fmt.Errorf("unexpected error getting datasource: %v", err)
+	}
+
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+		To:   "now",
+		From: "now-1s",
+		Queries: []GrafanaDataSourceQuery{
+			{
+				Datasource: GrafanaDataSource{
+					UID: datasourceUID,
+				},
+				Expresion: `sum(workqueue_adds_total{name="replicaset"})`,
+				RefID:     "A",
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("unexpected error querying datasource: %v", err)
+	}
+
+	result, ok := queryResponse.Results["A"]
+	if !ok {
+		return fmt.Errorf("expected query response to contain result with ref 'A'")
+	}
+
+	if result.Status != 200 {
+		return fmt.Errorf("expected query status to be 200, got %d", result.Status)
+	}
+
+	if len(result.Frames) != 1 {
+		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
+	}
+
+	v, ok := result.Frames[0].Data.Values[1][0].(float64)
+	if !ok {
+		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
+	}
+
+	if v < 10 {
+		return fmt.Errorf(`expected 10<sum(workqueue_adds_total{name="replicaset"}), got %f`, v)
+	}
+
+	return nil
+}
+
+func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	if err != nil {
+		return fmt.Errorf("unexpected error getting datasource: %v", err)
+	}
+
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+		To:   "now",
+		From: "now-1s",
+		Queries: []GrafanaDataSourceQuery{
+			{
+				Datasource: GrafanaDataSource{
+					UID: datasourceUID,
+				},
+				Expresion: "sum(kubelet_active_pods)",
+				RefID:     "A",
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("unexpected error querying datasource: %v", err)
+	}
+
+	result, ok := queryResponse.Results["A"]
+	if !ok {
+		return fmt.Errorf("expected query response to contain result with ref 'A'")
+	}
+
+	if result.Status != 200 {
+		return fmt.Errorf("expected query status to be 200, got %d", result.Status)
+	}
+
+	if len(result.Frames) != 1 {
+		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
+	}
+
+	v, ok := result.Frames[0].Data.Values[1][0].(float64)
+	if !ok {
+		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
+	}
+
+	if v < 10 {
+		return fmt.Errorf(`expected 10<sum(kubelet_active_pods), got %f`, v)
 	}
 
 	return nil

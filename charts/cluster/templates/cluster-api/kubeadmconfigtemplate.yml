@@ -11,6 +11,17 @@ spec:
         nodeRegistration:
           kubeletExtraArgs: {}
       files:
+        - path: /etc/kubernetes/kubelet/config.yaml
+          owner: "root:root"
+          permissions: "0644"
+          content: |
+            apiVersion: kubelet.config.k8s.io/v1beta1
+            kind: KubeletConfiguration
+            authentication:
+              webhook:
+                enabled: true
+            authorization:
+              mode: Webhook
         - path: /etc/containers/registries.conf
           content: |
             {{- range .Values.config.imageRegistries }}

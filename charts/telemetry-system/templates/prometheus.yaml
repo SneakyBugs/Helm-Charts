@@ -17,6 +17,8 @@ spec:
       releaseName: kube-prometheus-stack
       valuesObject:
         fullnameOverride: prometheus-operator
+        defaultRules:
+          create: false
         alertmanager:
           enabled: false
         prometheus:
@@ -87,10 +89,19 @@ spec:
           enabled: true
           prometheusSpec:
             enableRemoteWriteReceiver: true
+            ruleSelector:
+              matchLabels:
+                prometheus: in-cluster
             serviceMonitorSelector:
               matchLabels:
                 prometheus: in-cluster
             podMonitorSelector:
+              matchLabels:
+                prometheus: in-cluster
+            probeSelector:
+              matchLabels:
+                prometheus: in-cluster
+            scrapeConfigSelector:
               matchLabels:
                 prometheus: in-cluster
             storageSpec:
