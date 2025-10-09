@@ -106,7 +106,14 @@ func TestTelemetrySystem(t *testing.T) {
 	t.Run("Prometheus contains metrics from kubelet exporter", func(t *testing.T) {
 		t.Parallel()
 		retry.DoWithRetry(t, "Prometheus contains metrics kubelet exporter", 6*20, 10*time.Second, func() (string, error) {
-			return "", testPrometheusContainsKubeControllerManagerMetrics(t, httpClient, tko)
+			return "", testPrometheusContainsKubeletMetrics(t, httpClient, tko)
+		})
+	})
+
+	t.Run("Clickhouse contains traces from kube-apiserver", func(t *testing.T) {
+		t.Parallel()
+		retry.DoWithRetry(t, "Clickhouse contains traces from kube-apiserver", 6*20, 10*time.Second, func() (string, error) {
+			return "", testClickHouseContainsAPIServerTraces(t, httpClient, tko)
 		})
 	})
 }
@@ -137,17 +144,17 @@ func testGrafanaDatasources(t *testing.T, c *http.Client, tenantKubectlOptions *
 		if datasource.Type == "prometheus" {
 			promtheusDataSourceFound = true
 		}
-		if datasource.Type == "vertamedia-clickhouse-datasource" {
+		if datasource.Type == "grafana-clickhouse-datasource" {
 			clickhouseDataSourceFound = true
 		}
 	}
 
 	if !promtheusDataSourceFound {
-		return fmt.Errorf("expected Grafana data source of type Prometheus to be present, got [%s, %s]", datasources[0].Type, datasources[1].Type)
+		return fmt.Errorf("expected Grafana data source of type 'prometheus' to be present, got [%s, %s]", datasources[0].Type, datasources[1].Type)
 	}
 
 	if !clickhouseDataSourceFound {
-		return fmt.Errorf("expected Grafana data source of type Clickhouse Altinity plugin to be present, got [%s, %s]", datasources[0].Type, datasources[1].Type)
+		return fmt.Errorf("expected Grafana data source of type 'grafana-clickhouse-datasource' to be present, got [%s, %s]", datasources[0].Type, datasources[1].Type)
 	}
 
 	return nil
@@ -162,8 +169,8 @@ func testPrometheusDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOp
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			GrafanaDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
@@ -205,7 +212,7 @@ func testPrometheusDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOp
 }
 
 func testClickHouseDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Logs")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
 	if err != nil {
 		return err
 	}
@@ -213,13 +220,13 @@ func testClickHouseDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOp
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1h",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			ClickHouseDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
-				Format: "table",
-				Query:  "SELECT 1",
+				Format: 1,
+				RawSQL: "SELECT 1",
 				RefID:  "A",
 			},
 		},
@@ -262,8 +269,8 @@ func testPrometheusMetricsAreReceived(t *testing.T, c *http.Client, tenantKubect
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			GrafanaDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
@@ -302,7 +309,7 @@ func testPrometheusMetricsAreReceived(t *testing.T, c *http.Client, tenantKubect
 }
 
 func testClickHouseLogsAreReceived(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Logs")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
 	if err != nil {
 		return err
 	}
@@ -310,13 +317,13 @@ func testClickHouseLogsAreReceived(t *testing.T, c *http.Client, tenantKubectlOp
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-12h",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			ClickHouseDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
-				Format: "table",
-				Query:  "SELECT Body FROM otel.otel_logs WHERE ResourceAttributes['k8s.namespace.name'] = 'kube-system' ORDER BY Timestamp DESC LIMIT 10",
+				Format: 1,
+				RawSQL: "SELECT Body FROM otel.otel_logs WHERE ResourceAttributes['k8s.namespace.name'] = 'kube-system' ORDER BY Timestamp DESC LIMIT 10",
 				RefID:  "A",
 			},
 		},
@@ -354,8 +361,8 @@ func testPrometheusContainsKubeSchedulerMetrics(t *testing.T, c *http.Client, te
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			GrafanaDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
@@ -402,8 +409,8 @@ func testPrometheusContainsKubeControllerManagerMetrics(t *testing.T, c *http.Cl
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			GrafanaDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
@@ -450,8 +457,8 @@ func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKu
 	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
-		Queries: []GrafanaDataSourceQuery{
-			{
+		Queries: []any{
+			GrafanaDataSourceQuery{
 				Datasource: GrafanaDataSource{
 					UID: datasourceUID,
 				},
@@ -484,6 +491,59 @@ func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKu
 
 	if v < 10 {
 		return fmt.Errorf(`expected 10<sum(kubelet_active_pods), got %f`, v)
+	}
+
+	return nil
+}
+
+func testClickHouseContainsAPIServerTraces(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
+	if err != nil {
+		return err
+	}
+
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+		To:   "now",
+		From: "now-12h",
+		Queries: []any{
+			ClickHouseDataSourceQuery{
+				Datasource: GrafanaDataSource{
+					UID: datasourceUID,
+				},
+				Format: 1,
+				RawSQL: "SELECT COUNT(*) FROM otel.otel_traces WHERE ServiceName='apiserver'",
+				RefID:  "A",
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	result, ok := queryResponse.Results["A"]
+	if !ok {
+		return fmt.Errorf("expected query response to contain result with ref 'A'")
+	}
+
+	if result.Status != 200 {
+		return fmt.Errorf("expected query status to be 200, got %d", result.Status)
+	}
+
+	if len(result.Frames) == 2 {
+		return fmt.Errorf("expected query result frames to be of length 2, got %d", len(result.Frames))
+	}
+
+	if len(result.Frames[0].Data.Values[0]) != 1 {
+		return fmt.Errorf("expected result length to be 1, got %d", len(result.Frames[0].Data.Values[0]))
+	}
+
+	v, ok := result.Frames[0].Data.Values[0][0].(float64)
+	if !ok {
+		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
+	}
+
+	if v < 1 {
+		return fmt.Errorf("Expected ClickHouse to contain at least 1 apiserver trace, got %f", v)
 	}
 
 	return nil

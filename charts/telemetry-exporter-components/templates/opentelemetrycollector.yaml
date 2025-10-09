@@ -136,3 +136,7 @@ spec:
           receivers: [filelog]
           processors: [k8sattributes, batch]
           exporters: [otlp]
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlp]

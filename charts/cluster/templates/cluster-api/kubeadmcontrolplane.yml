@@ -16,6 +16,13 @@ spec:
       namespace: {{ .Release.Namespace }}
   kubeadmConfigSpec:
     clusterConfiguration:
+      apiServer:
+        extraArgs:
+          tracing-config-file: /etc/kubernetes/apiserver/tracing-configuration.yaml
+        extraVolumes:
+          - hostPath: /etc/kubernetes/apiserver
+            mountPath: /etc/kubernetes/apiserver
+            name: configs
       controllerManager:
         extraArgs:
           bind-address: 0.0.0.0
@@ -26,11 +33,20 @@ spec:
         local:
           extraArgs:
             listen-metrics-urls: http://0.0.0.0:2381
+            experimental-distributed-tracing-address: {{ .Values.config.otlpExporter.endpoint }}
       networking:
         dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
         serviceSubnet: {{ .Values.config.serviceSubnet }}
     files:
+      - path: /etc/kubernetes/apiserver/tracing-configuration.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          apiVersion: apiserver.config.k8s.io/v1beta1
+          kind: TracingConfiguration
+          endpoint: {{ .Values.config.otlpExporter.endpoint }}
+          samplingRatePerMillion: 10000
       - path: /etc/kubernetes/kubelet/config.yaml
         owner: "root:root"
         permissions: "0644"

@@ -52,3 +52,7 @@ spec:
           receivers: [otlp]
           processors: [batch]
           exporters: [clickhouse]
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [clickhouse]

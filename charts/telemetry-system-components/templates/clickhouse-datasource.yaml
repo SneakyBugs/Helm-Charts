@@ -2,7 +2,7 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
-  name: {{ include "telemetry-system-components.fullname" . }}-clickhouse
+  name: {{ include "telemetry-system-components.fullname" . }}-grafana-clickhouse
   labels:
     {{- include "telemetry-system-components.labels" . | nindent 4 }}
 spec:
@@ -23,17 +23,16 @@ spec:
           key: tls.key
           name: logs-grafana-tls
   datasource:
-    name: Logs
-    type: vertamedia-clickhouse-datasource
+    name: ClickHouse
+    type: grafana-clickhouse-datasource
     access: proxy
-    url: https://clickhouse-logs.telemetry-system.svc.cluster.local
     jsonData:
+      host: clickhouse-logs.telemetry-system.svc.cluster.local
+      port: 9443
+      secure: true
+      username: grafana
       tlsAuth: true
       tlsAuthWithCACert: true
-      useYandexCloudAuthorization: true
-      xClickHouseSSLCertificateAuth: true
-      xHeaderUser: grafana
-      dataSourceUrl: https://clickhouse-logs.telemetry-system.svc.cluster.local
     secureJsonData:
       tlsCACert: ${ca.crt}
       tlsClientCert: ${tls.crt}
@@ -43,5 +42,5 @@ spec:
       app.kubernetes.io/component: grafana
       {{- include "telemetry-system-components.selector-labels" . | nindent 6 }}
   plugins:
-    - name: vertamedia-clickhouse-datasource
-      version: 3.4.4
+    - name: grafana-clickhouse-datasource
+      version: 4.11.1

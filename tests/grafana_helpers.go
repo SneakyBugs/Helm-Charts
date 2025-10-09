@@ -92,9 +92,9 @@ func queryGrafanaDataSource(t *testing.T, c *http.Client, tenantKubectlOptions *
 }
 
 type GrafanaDataSourceQueryBody struct {
-	Queries []GrafanaDataSourceQuery `json:"queries"`
-	From    string                   `json:"from"`
-	To      string                   `json:"to"`
+	Queries []any  `json:"queries"`
+	From    string `json:"from"`
+	To      string `json:"to"`
 }
 
 type GrafanaDataSourceQuery struct {
@@ -102,6 +102,13 @@ type GrafanaDataSourceQuery struct {
 	Expresion  string            `json:"expr,omitempty"`
 	Format     string            `json:"format,omitempty"`
 	Query      string            `json:"query,omitempty"`
+	Datasource GrafanaDataSource `json:"datasource,omitempty"`
+}
+
+type ClickHouseDataSourceQuery struct {
+	RefID      string            `json:"refId,omitempty"`
+	Format     int               `json:"format,omitempty"`
+	RawSQL     string            `json:"rawSql,omitempty"`
 	Datasource GrafanaDataSource `json:"datasource,omitempty"`
 }
 
