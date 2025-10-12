@@ -33,6 +33,17 @@ spec:
       username: grafana
       tlsAuth: true
       tlsAuthWithCACert: true
+      defaultDatabase: otel
+      logs:
+        defaultTable: otel_logs
+        durationUnit: nanoseconds
+        otelEnabled: true
+        otelVersion: latest
+      traces:
+        defaultTable: otel_traces
+        durationUnit: nanoseconds
+        otelEnabled: true
+        otelVersion: latest
     secureJsonData:
       tlsCACert: ${ca.crt}
       tlsClientCert: ${tls.crt}

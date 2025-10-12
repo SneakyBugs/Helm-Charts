@@ -27,21 +27,20 @@ func TestCluster(t *testing.T) {
 
 	if !useExistingNamespace {
 		if !skipDeletion {
-			defer k8s.DeleteNamespace(t, ko, namespace)
+			t.Cleanup(func() {
+				k8s.DeleteNamespace(t, ko, namespace)
+			})
 		}
 		k8s.CreateNamespace(t, ko, namespace)
 	}
 
-	uninstallCluster := installCluster(t, ko, "test")
-	if !skipDeletion {
-		defer uninstallCluster()
-	}
+	installCluster(t, ko, "test", !skipDeletion)
 
 	// Wait until cluster is ready.
 	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test", 6*30, 10*time.Second)
 }
 
-func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) func() {
+func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cleanup bool) {
 	helm.Upgrade(t, &helm.Options{
 		ValuesFiles:    []string{"values/cluster.yaml"},
 		KubectlOptions: ko,
@@ -49,6 +48,13 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) fu
 			"upgrade": []string{"--install", "--wait"},
 		},
 	}, "../charts/cluster", releaseName)
+	if cleanup {
+		t.Cleanup(func() {
+			helm.Delete(t, &helm.Options{
+				KubectlOptions: ko,
+			}, releaseName, true)
+		})
+	}
 
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, fmt.Sprintf("%s-cluster", releaseName))
 	defer closer()
@@ -80,10 +86,4 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string) fu
 		}
 		return "", nil
 	})
-
-	return func() {
-		defer helm.Delete(t, &helm.Options{
-			KubectlOptions: ko,
-		}, releaseName, true)
-	}
 }

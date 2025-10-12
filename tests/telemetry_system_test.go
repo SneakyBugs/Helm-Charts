@@ -29,23 +29,19 @@ func TestTelemetrySystem(t *testing.T) {
 
 	if !useExistingNamespace {
 		if !skipDeletion {
-			defer k8s.DeleteNamespace(t, ko, namespace)
+			t.Cleanup(func() {
+				k8s.DeleteNamespace(t, ko, namespace)
+			})
 		}
 		k8s.CreateNamespace(t, ko, namespace)
 	}
 
-	uninstallCluster := installCluster(t, ko, "test")
-	if !skipDeletion {
-		defer uninstallCluster()
-	}
+	installCluster(t, ko, "test", !skipDeletion)
 
 	// Wait until cluster is ready.
 	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test", 6*30, 10*time.Second)
 
-	uninstallTelemetrySystem := installTelemetrySystem(t, ko, "test", "test-telemetry-system")
-	if !skipDeletion {
-		defer uninstallTelemetrySystem()
-	}
+	installTelemetrySystem(t, ko, "test", "test-telemetry-system", !skipDeletion)
 
 	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test-telemetry-system", 0, 10*time.Second)
 
@@ -549,7 +545,7 @@ func testClickHouseContainsAPIServerTraces(t *testing.T, c *http.Client, tenantK
 	return nil
 }
 
-func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterReleaseName string, releaseName string) func() {
+func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterReleaseName string, releaseName string, cleanup bool) {
 	helm.Upgrade(t, &helm.Options{
 		ValuesFiles:    []string{"values/telemetry-system.yaml"},
 		KubectlOptions: ko,
@@ -557,6 +553,13 @@ func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterRelease
 			"upgrade": []string{"--install", "--wait"},
 		},
 	}, "../charts/telemetry-system", releaseName)
+	if cleanup {
+		t.Cleanup(func() {
+			helm.Delete(t, &helm.Options{
+				KubectlOptions: ko,
+			}, releaseName, true)
+		})
+	}
 
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, fmt.Sprintf("%s-cluster", clusterReleaseName))
 	defer closer()
@@ -575,10 +578,4 @@ func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterRelease
 		}
 		return "", nil
 	})
-
-	return func() {
-		defer helm.Delete(t, &helm.Options{
-			KubectlOptions: ko,
-		}, releaseName, true)
-	}
 }

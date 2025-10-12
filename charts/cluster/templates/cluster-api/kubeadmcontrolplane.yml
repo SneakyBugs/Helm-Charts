@@ -33,6 +33,7 @@ spec:
         local:
           extraArgs:
             listen-metrics-urls: http://0.0.0.0:2381
+            experimental-enable-distributed-tracing: "true"
             experimental-distributed-tracing-address: {{ .Values.config.otlpExporter.endpoint }}
       networking:
         dnsDomain: cluster.local
