@@ -19,7 +19,7 @@ spec:
       valuesObject:
         manager:
           collectorImage:
-            repository: "otel/opentelemetry-collector-contrib"
+            repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: telemetry

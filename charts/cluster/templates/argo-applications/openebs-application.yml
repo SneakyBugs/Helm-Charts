@@ -25,7 +25,14 @@ spec:
               enabled: false
             lvm:
               enabled: false
+        loki:
+          enabled: false
+        alloy:
+          enabled: false
         localpv-provisioner:
+          localpv:
+            image:
+              registry: docker.io
           hostpathClass:
             isDefaultClass: true
   destination:
