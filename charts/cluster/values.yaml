@@ -20,6 +20,8 @@ versions:
   velero: 11.1.0 # Velero chart version to deploy.
   veleroPluginForAWS: 1.12.2 # Velero AWS plugin version to deploy.
   kro: 0.4.1 # Kro version to deploy.
+  rook: v1.18.4 # Rook version to deploy.
+  metricsServer: 3.13.0 # Metrics server version to deploy.
 
 features:
   backups: true # Enable Velero backups when true.
