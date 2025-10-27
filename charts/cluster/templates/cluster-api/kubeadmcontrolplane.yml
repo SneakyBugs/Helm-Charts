@@ -61,6 +61,7 @@ spec:
             mode: Webhook
       - path: /etc/containers/registries.conf
         content: |
+          unqualified-search-registries = ["docker.io"]
           {{- range .Values.config.imageRegistries }}
           [[registry]]
           prefix = {{ quote .prefix }}

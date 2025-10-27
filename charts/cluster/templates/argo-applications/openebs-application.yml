@@ -30,9 +30,8 @@ spec:
         alloy:
           enabled: false
         localpv-provisioner:
-          localpv:
-            image:
-              registry: docker.io
+          global:
+              imageRegistry: docker.io
           hostpathClass:
             isDefaultClass: true
   destination:
