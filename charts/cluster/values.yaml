@@ -5,7 +5,7 @@ argocdNamespace: argocd # Namespace to deploy Argo CD resources to.
 versions:
   calico: v3.30.3 # Calico version to deploy.
   certManager: v1.19.1 # Cert Manager version to deploy.
-  components: 5.1.0 # cluster-components chart version to deploy.
+  components: 6.0.0 # cluster-components chart version to deploy.
   telemetryExporterComponents: 2.0.0 # telemetry-exporter-components chart version to deploy.
   externalDNS: 1.19.0 # ExternalDNS version to deploy.
   externalSecrets: 0.20.3 # External Secrets version to deploy.
