@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ $name }}
+  name: {{ .Release.Namespace }}-{{ $name }}
   namespace: {{ .Values.config.rbac.namespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
