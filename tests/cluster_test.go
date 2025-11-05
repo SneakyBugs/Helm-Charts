@@ -66,6 +66,10 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},
 			},
+			SetValues: map[string]string{
+				"cephCSIRBD.nodeClientSecretRemoteKey":        fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-node", ko.Namespace, releaseName),
+				"cephCSIRBD.provisionerClientSecretRemoteKey": fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-provisioner", ko.Namespace, releaseName),
+			},
 		}, "../charts/cluster-components", "cluster-components")
 		if err != nil {
 			return "", err

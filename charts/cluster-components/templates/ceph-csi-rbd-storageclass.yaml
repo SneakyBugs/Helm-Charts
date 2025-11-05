@@ -1,0 +1,24 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: ceph-block
+  labels:
+    {{- include "cluster-components.labels" . | nindent 4 }}
+provisioner: rbd.csi.ceph.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+parameters:
+  clusterID: {{ .Values.cephCSIRBD.cephClusterID }}
+  pool: {{ .Values.cephCSIRBD.cephPool }}
+  imageFormat: "2"
+  imagefeatures: layering
+  csi.storage.k8s.io/controller-expand-secret-name: ceph-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-expand-secret-namespace: {{ .Values.cephCSIRBD.namespace }}
+  csi.storage.k8s.io/fstype: ext4
+  csi.storage.k8s.io/node-stage-secret-name: ceph-csi-rbd-node
+  csi.storage.k8s.io/node-stage-secret-namespace: {{ .Values.cephCSIRBD.namespace }}
+  csi.storage.k8s.io/provisioner-secret-name: ceph-csi-rbd-provisioner
+  csi.storage.k8s.io/provisioner-secret-namespace: {{ .Values.cephCSIRBD.namespace }}

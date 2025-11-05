@@ -24,6 +24,11 @@ spec:
         velero:
           enabled: {{ .Values.features.backups }}
           externalSecret: {{- toYaml .Values.config.velero.externalSecret | nindent 12 }}
+        cephCSIRBD:
+          nodeClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-node
+          provisionerClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-provisioner
+          cephPool: {{ .Values.config.cephCSIRBD.blockPoolName }}
+          rookNamespace: {{ .Values.config.cephCSIRBD.rookNamespace }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: default

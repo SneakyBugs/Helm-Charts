@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/ceph.rook.io/cephclient_v1.json
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: ceph.rook.io/v1
+kind: CephClient
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-csi-rbd-node
+  namespace: {{ .Values.config.cephCSIRBD.rookNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  caps:
+    mon: profile rbd, allow command 'osd blocklist'
+    osd: profile rbd

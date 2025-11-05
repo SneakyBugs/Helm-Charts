@@ -46,3 +46,11 @@ velero:
   externalSecret:
     remoteKey: backup # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
     veleroCredentialsProperty: veleroCredentials # Key of the Velero credentials config.
+
+cephCSIRBD:
+  namespace: ceph-csi-rbd
+  rookNamespace: rook-ceph
+  provisionerClientSecretRemoteKey: example
+  nodeClientSecretRemoteKey: example
+  cephClusterID: external
+  cephPool: ceph-blockpool

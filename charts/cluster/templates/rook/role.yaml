@@ -1,0 +1,25 @@
+{{ $name := include "cluster.fullname" . -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Namespace }}-{{ $name }}-rbd-csi
+  namespace: {{ .Values.config.cephCSIRBD.rookNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+    resourceNames:
+      - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-node
+      - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-provisioner
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - selfsubjectrulesreviews
+    verbs:
+      - create
