@@ -7,6 +7,8 @@ metadata:
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
@@ -25,6 +27,8 @@ spec:
     automated:
       selfHeal: true
       prune: true
+    syncOptions:
+      - ServerSideApply=true
     retry:
       limit: -1
       backoff:

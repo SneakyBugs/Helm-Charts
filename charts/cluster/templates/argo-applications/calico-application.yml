@@ -7,6 +7,8 @@ metadata:
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   ignoreDifferences:
     - group: projectcalico.org
@@ -47,8 +49,8 @@ spec:
       selfHeal: true
       prune: true
     syncOptions:
-      - ServerSideApply=true
       - CreateNamespace=true
+      - ServerSideApply=true
     retry:
       limit: -1
       backoff:
