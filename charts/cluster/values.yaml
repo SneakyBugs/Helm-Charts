@@ -9,8 +9,6 @@ versions:
   telemetryExporterComponents: 2.0.0 # telemetry-exporter-components chart version to deploy.
   externalDNS: 1.19.0 # ExternalDNS version to deploy.
   externalSecrets: 0.20.3 # External Secrets version to deploy.
-  openEBS: 4.3.3 # OpenEBS version to deploy.
-  traefik: 37.1.2 # Traefik version to deploy.
   envoyGateway: 1.5.3 # Envoy Gateway version to deploy.
   kubeStateMetrics: 6.3.0 # Kube State Metrics chart version to deploy.
   kubePrometheusStack: 78.2.1 # kube-prometheus-stack chart version to deploy.
@@ -53,9 +51,6 @@ config:
       location: oci.infra.sneakybugs.com/k8s
     - prefix: oci.external-secrets.io
       location: oci.infra.sneakybugs.com/external-secrets
-
-  traefik:
-    ingressHostname: ingress.services.infra.sneakybugs.com # Hostname to set for the ingress service with ExternalDNS.
 
   gateway:
     hostname: '*.infra.sneakybugs.com'
