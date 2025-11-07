@@ -7,8 +7,6 @@ metadata:
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
@@ -20,8 +18,6 @@ spec:
       valuesObject:
         sources:
           - service
-          - ingress
-          - traefik-proxy
           - gateway-grpcroute
           - gateway-httproute
         provider:

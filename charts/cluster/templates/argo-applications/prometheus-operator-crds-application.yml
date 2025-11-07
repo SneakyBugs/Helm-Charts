@@ -8,8 +8,6 @@ metadata:
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{ printf "%s-%s-system" .Release.Namespace $name }}
   source:
