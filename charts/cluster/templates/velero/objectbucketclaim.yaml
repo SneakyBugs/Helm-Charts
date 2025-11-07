@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/objectbucket.io/objectbucketclaim_v1alpha1.json
+{{ if .Values.features.backups -}}
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
+{{ $userName := printf "%s-%s-backup-velero" .Release.Namespace (include "cluster.fullname" .) -}}
+metadata:
+  name: {{ $bucketName }}
+  namespace: {{ .Values.config.velero.storage.rookNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  bucketName: {{ $bucketName }}
+  storageClassName: {{ .Values.config.velero.storage.cephObjectBucketStorageClassName }}
+  additionalConfig:
+    bucketPolicy: |
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:aws:iam:::user/{{ $userName }}"
+                  },
+                  "Action": "s3:ListBucket",
+                  "Resource": [
+                      "arn:aws:s3:::{{ $bucketName }}"
+                  ]
+              },
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:aws:iam:::user/{{ $userName }}"
+                  },
+                  "Action": ["s3:GetObject", "s3:DeleteObject", "s3:PutObject", "s3:PutObjectTagging", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"],
+                  "Resource": [
+                      "arn:aws:s3:::{{ $bucketName }}/*"
+                  ]
+              }
+          ]
+      }
+{{- end }}
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/ceph.rook.io/cephobjectstoreuser_v1.json
+{{ if .Values.features.backups -}}
+{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
+{{ $userName := printf "%s-%s-backup-velero" .Release.Namespace (include "cluster.fullname" .) -}}
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: {{ $userName }}
+  namespace: {{ .Values.config.velero.storage.rookNamespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+spec:
+  store: {{ .Values.config.velero.storage.cephObjectStoreName }}
+  displayName: {{ $bucketName }} Velero backup
+{{- end }}

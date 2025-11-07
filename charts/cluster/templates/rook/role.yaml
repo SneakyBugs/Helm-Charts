@@ -17,6 +17,7 @@ rules:
     resourceNames:
       - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-node
       - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-provisioner
+      - rook-ceph-object-user-ceph-objectstore-{{ .Release.Namespace }}-{{ $name }}-backup-velero
   - apiGroups:
       - authorization.k8s.io
     resources:

@@ -69,6 +69,7 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 			SetValues: map[string]string{
 				"cephCSIRBD.nodeClientSecretRemoteKey":        fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-node", ko.Namespace, releaseName),
 				"cephCSIRBD.provisionerClientSecretRemoteKey": fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-provisioner", ko.Namespace, releaseName),
+				"velero.credentialsSecretRemoteKey":           fmt.Sprintf("rook-ceph-object-user-ceph-objectstore-%s-%s-cluster-backup-velero", ko.Namespace, releaseName),
 			},
 		}, "../charts/cluster-components", "cluster-components")
 		if err != nil {

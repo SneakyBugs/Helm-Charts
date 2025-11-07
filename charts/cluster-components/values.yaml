@@ -42,14 +42,13 @@ certManager:
 
 velero:
   enabled: true # Create Velero backup related resources when true.
+  rookNamespace: rook-ceph # Rook namespace to use for backup ObjectBucketClaim in the management cluster.
+  credentialsSecretRemoteKey: example # Rook CephObjectStoreUser secret name in the management cluster.
   namespace: velero # Namespace to deploy Velero resources in.
-  externalSecret:
-    remoteKey: backup # Secret name in externalSecrets.remoteNamespace namespace in the management cluster.
-    veleroCredentialsProperty: veleroCredentials # Key of the Velero credentials config.
 
 cephCSIRBD:
-  namespace: ceph-csi-rbd
-  rookNamespace: rook-ceph
+  namespace: ceph-csi-rbd # Namespace where Ceph CSI RBD plugin is installed in the tenant cluster.
+  rookNamespace: rook-ceph # Rook namespace in the management cluster for Ceph clients and Rados namespace.
   provisionerClientSecretRemoteKey: example
   nodeClientSecretRemoteKey: example
   cephClusterID: external

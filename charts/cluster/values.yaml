@@ -15,7 +15,7 @@ versions:
   prometheusNodeExporter: 4.48.0 # Node exporter chart version to deploy.
   prometheusOperatorCRDs: 24.0.1 # Prometheus Operator CRDs chart version to deploy.
   openTelemetryOperator: 0.97.1 # OpenTelemetry Operator chart version to deploy.
-  velero: 11.1.0 # Velero chart version to deploy.
+  velero: 11.1.1 # Velero chart version to deploy.
   veleroPluginForAWS: 1.12.2 # Velero AWS plugin version to deploy.
   kro: 0.4.1 # Kro version to deploy.
   cephCSIRBD: 3.15.0 # ceph-csi-rbd version to deploy.
@@ -78,15 +78,15 @@ config:
 
   velero: # Velero backup configuration.
     storage:
+      rookNamespace: rook-ceph # Rook namespace to use for backup ObjectBucketClaim in the management cluster.
+      cephObjectStoreName: ceph-objectstore # Rook CephObjectStore to use for the bucket in the management cluster.
+      cephObjectBucketStorageClassName: ceph-bucket # Rook StorageClass name to use for the bucket in the management cluster.
       s3Url: https://vmi.infra.sneakybugs.com # S3 endpoint URL for backup storage.
-      bucket: backups # Bucket name for backup storage.
       prefix: "" # Prefix to store backups in the S3 bucket, defaults to <namespace>:<cluster-name> if unspecified.
       accessMode: ReadWrite # Backup location access mode, ReadWrite or ReadOnly.
     backup:
       schedule: "0 4 * * *" # Cron schedule to perform backups at.
       ttl: 720h # Time to keep backups.
-    externalSecret: {} # External secret used by Velero for S3 credentials.
-      # remoteKey: backup
 
   rbac:
     namespace: tenant-secrets # Namespace for role in the management cluster.

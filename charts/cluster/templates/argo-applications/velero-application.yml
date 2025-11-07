@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
 {{ if .Values.features.backups -}}
 {{ $name := include "cluster.fullname" . -}}
+{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -17,9 +18,13 @@ spec:
     helm:
       releaseName: velero
       valuesObject:
+        # Handled by Argo CD.
+        upgradeCRDs: false
+        image:
+          repository: docker.io/velero/velero
         initContainers:
           - name: velero-plugin-for-aws
-            image: velero/velero-plugin-for-aws:v{{ .Values.versions.veleroPluginForAWS }}
+            image: docker.io/velero/velero-plugin-for-aws:v{{ .Values.versions.veleroPluginForAWS }}
             imagePullPolicy: IfNotPresent
             volumeMounts:
               - mountPath: /target
@@ -31,15 +36,15 @@ spec:
           backupStorageLocation:
             - name: default
               provider: aws
-              bucket: {{ .Values.config.velero.storage.bucket }}
+              bucket: {{ $bucketName }}
               prefix: {{ .Values.config.velero.storage.prefix | default (printf "%s:%s" .Release.Namespace $name) }}
               default: true
               accessMode: {{ .Values.config.velero.storage.accessMode }}
               credential:
-                name: cluster-components-backup
+                name: ceph-object-user-velero
                 key: veleroCredentials
               config:
-                region: minio
+                region: ceph
                 s3ForcePathStyle: true
                 s3Url: {{ .Values.config.velero.storage.s3Url }}
         schedules:
