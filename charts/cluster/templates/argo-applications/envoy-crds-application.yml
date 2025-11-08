@@ -3,18 +3,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ .Release.Namespace }}-{{ $name }}-envoy
+  name: {{ .Release.Namespace }}-{{ $name }}-envoy-crds
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
-    chart: gateway-helm
+    chart: gateway-crds-helm
     repoURL: docker.io/envoyproxy
     targetRevision: {{ .Values.versions.envoyGateway }}
     helm:
-      skipCrds: true
+      valuesObject:
+        crds:
+          gatewayAPI:
+            enabled: true
+          envoyGateway:
+            enabled: true
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: envoy
@@ -24,7 +29,6 @@ spec:
       prune: true
     syncOptions:
       - ServerSideApply=true
-      - CreateNamespace=true
     retry:
       limit: -1
       backoff:
