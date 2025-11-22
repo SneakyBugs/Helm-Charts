@@ -38,6 +38,10 @@ spec:
                   guest: {{ .Values.nodes.controlPlane.resources.memory }}
                 devices:
                   networkInterfaceMultiqueue: true
+                  watchdog:
+                    name: watchdog0
+                    i6300esb:
+                      action: poweroff
                   interfaces:
                     - name: cluster
                       bridge: {}

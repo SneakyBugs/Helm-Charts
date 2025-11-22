@@ -38,6 +38,10 @@ spec:
                   guest: {{ .Values.nodes.worker.resources.memory }}
                 devices:
                   networkInterfaceMultiqueue: true
+                  watchdog:
+                    name: watchdog0
+                    i6300esb:
+                      action: poweroff
                   disks:
                     - disk:
                         bus: virtio
