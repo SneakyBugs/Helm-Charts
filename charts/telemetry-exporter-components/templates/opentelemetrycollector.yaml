@@ -9,6 +9,7 @@ metadata:
     {{- include "telemetry-exporter-components.labels" . | nindent 4 }}
 spec:
   mode: daemonset
+  resources: {{- toYaml .Values.openTelemetry.collectorResources | nindent 4 }}
   serviceAccount: {{ $name }}-collector
   securityContext:
     runAsUser: 0
@@ -31,6 +32,7 @@ spec:
     - operator: Exists
   targetAllocator:
     enabled: true
+    resources: {{- toYaml .Values.openTelemetry.targetAllocatorResources | nindent 6 }}
     serviceAccount: {{ $name }}-targetallocator
     allocationStrategy: per-node
     prometheusCR:

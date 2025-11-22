@@ -8,3 +8,17 @@ fullnameOverride: "" # Override full release name.
 openTelemetry:
   namespace: telemetry # Namespace to deploy OpenTelemetry resources in.
   exporterOTLPEndpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
+  collectorResources:
+    requests:
+      cpu: 125m
+      memory: 500Mi
+    limits:
+      cpu: 250m
+      memory: 1000Mi
+  targetAllocatorResources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 256Mi

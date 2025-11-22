@@ -23,7 +23,133 @@ spec:
     helm:
       releaseName: tigera-operator
       valuesObject:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+        goldmane:
+          goldmaneDeployment:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: goldmane
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 64Mi
+                        limits:
+                          cpu: 100m
+                          memory: 128Mi
+        whisker:
+          whiskerDeployment:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: whisker
+                      resources:
+                        requests:
+                          cpu: 10m
+                          memory: 16Mi
+                        limits:
+                          cpu: 10m
+                          memory: 32Mi
+                    - name: whisker-backend
+                      resources:
+                        requests:
+                          cpu: 10m
+                          memory: 16Mi
+                        limits:
+                          cpu: 10m
+                          memory: 32Mi
+        apiServer:
+          apiServerDeployment:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: calico-apiserver
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 128Mi
+                        limits:
+                          cpu: 100m
+                          memory: 256Mi
         installation:
+          calicoNodeDaemonSet:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: calico-node
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 128Mi
+                        limits:
+                          cpu: 100m
+                          memory: 256Mi
+          csiNodeDriverDaemonSet:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: calico-csi
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 32Mi
+                        limits:
+                          cpu: 100m
+                          memory: 64Mi
+                    - name: csi-node-driver-registrar
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 32Mi
+                        limits:
+                          cpu: 100m
+                          memory: 64Mi
+          calicoKubeControllersDeployment:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: calico-kube-controllers
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 32Mi
+                        limits:
+                          cpu: 100m
+                          memory: 64Mi
+          typhaDeployment:
+            spec:
+              template:
+                spec:
+                  initContainers:
+                    - name: typha-certs-key-cert-provisioner
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 32Mi
+                        limits:
+                          cpu: 100m
+                          memory: 64Mi
+                  containers:
+                    - name: calico-typha
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 64Mi
+                        limits:
+                          cpu: 100m
+                          memory: 128Mi
           calicoNetwork:
             bgp: Disabled
             ipPools:
