@@ -34,7 +34,7 @@ spec:
           extraArgs:
             listen-metrics-urls: http://0.0.0.0:2381
             experimental-enable-distributed-tracing: "true"
-            experimental-distributed-tracing-address: {{ .Values.config.otlpExporter.endpoint }}
+            experimental-distributed-tracing-address: telemetry-system-components-collector.telemetry-system.svc.cluster.local:4317
       networking:
         dnsDomain: cluster.local
         podSubnet: {{ .Values.config.podSubnet }}
@@ -46,7 +46,7 @@ spec:
         content: |
           apiVersion: apiserver.config.k8s.io/v1beta1
           kind: TracingConfiguration
-          endpoint: {{ .Values.config.otlpExporter.endpoint }}
+          endpoint: telemetry-system-components-collector.telemetry-system.svc.cluster.local:4317
           samplingRatePerMillion: 10000
       - path: /etc/kubernetes/kubelet/config.yaml
         owner: "root:root"
