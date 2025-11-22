@@ -16,6 +16,12 @@ spec:
     helm:
       releaseName: clickhouse-operator
       valuesObject:
+        operator:
+          image:
+            repository: docker.io/altinity/clickhouse-operator
+        metrics:
+          image:
+            repository: docker.io/altinity/metrics-exporter
         configs:
           files:
             config.yaml:
