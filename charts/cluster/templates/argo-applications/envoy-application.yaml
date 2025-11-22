@@ -15,6 +15,13 @@ spec:
     targetRevision: {{ .Values.versions.envoyGateway }}
     helm:
       skipCrds: true
+      valuesObject:
+        certgen:
+          job:
+            tolerations:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+                effect: NoSchedule
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: envoy
