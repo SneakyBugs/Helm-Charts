@@ -42,7 +42,11 @@ func TestCluster(t *testing.T) {
 
 func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cleanup bool) {
 	helm.Upgrade(t, &helm.Options{
-		ValuesFiles:    []string{"values/cluster.yaml"},
+		ValuesFiles: []string{"values/cluster.yaml"},
+		SetValues: map[string]string{
+			"features.components":         "false",
+			"features.exporterComponents": "false",
+		},
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
 			"upgrade": []string{"--install", "--wait"},
@@ -59,17 +63,24 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, fmt.Sprintf("%s-cluster", releaseName))
 	defer closer()
 
+	componentsValuesPath := templateApplicationValues(t, &helm.Options{
+		ValuesFiles:    []string{"values/cluster.yaml"},
+		KubectlOptions: ko,
+		ExtraArgs: map[string][]string{
+			"upgrade": []string{"--install", "--wait"},
+		},
+	},
+		"../charts/cluster",
+		releaseName,
+		"templates/argo-applications/components-application.yml",
+	)
+
 	retry.DoWithRetry(t, "attempt to install cluster-components", 6*20, 10*time.Second, func() (string, error) {
 		err := helm.UpgradeE(t, &helm.Options{
-			ValuesFiles:    []string{"values/cluster-components.yaml"},
 			KubectlOptions: tko,
+			ValuesFiles:    []string{componentsValuesPath},
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},
-			},
-			SetValues: map[string]string{
-				"cephCSIRBD.nodeClientSecretRemoteKey":        fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-node", ko.Namespace, releaseName),
-				"cephCSIRBD.provisionerClientSecretRemoteKey": fmt.Sprintf("rook-ceph-client-%s-%s-cluster-csi-rbd-provisioner", ko.Namespace, releaseName),
-				"velero.credentialsSecretRemoteKey":           fmt.Sprintf("rook-ceph-object-user-ceph-objectstore-%s-%s-cluster-backup-velero", ko.Namespace, releaseName),
 			},
 		}, "../charts/cluster-components", "cluster-components")
 		if err != nil {
@@ -78,10 +89,22 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 		return "", nil
 	})
 
+	exporterComponentsValuesPath := templateApplicationValues(t, &helm.Options{
+		ValuesFiles:    []string{"values/cluster.yaml"},
+		KubectlOptions: ko,
+		ExtraArgs: map[string][]string{
+			"upgrade": []string{"--install", "--wait"},
+		},
+	},
+		"../charts/cluster",
+		releaseName,
+		"templates/argo-applications/exporter-components-application.yml",
+	)
+
 	retry.DoWithRetry(t, "attempt to install telemetry-exporter-components", 6*20, 10*time.Second, func() (string, error) {
 		err := helm.UpgradeE(t, &helm.Options{
-			ValuesFiles:    []string{"values/telemetry-exporter-components.yaml"},
 			KubectlOptions: tko,
+			ValuesFiles:    []string{exporterComponentsValuesPath},
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},
 			},
