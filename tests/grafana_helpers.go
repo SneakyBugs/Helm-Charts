@@ -11,13 +11,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/k8s"
 )
 
-func getGrafanaDataSourceID(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions, name string) (string, error) {
+func getGrafanaDataSourceID(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions, grafanaURL string, name string) (string, error) {
 	grafanaUser, grafanaPassword, err := fetchGrafanaCredentials(t, tenantKubectlOptions)
 	if err != nil {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://grafana.infra.sneakybugs.com/api/datasources/name/%s", name), http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/datasources/name/%s", grafanaURL, name), http.NoBody)
 	if err != nil {
 		return "", err
 	}
@@ -70,7 +70,7 @@ func fetchGrafanaCredentials(t *testing.T, tenantKubectlOptions *k8s.KubectlOpti
 
 }
 
-func queryGrafanaDataSource(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions, query GrafanaDataSourceQueryBody) (QueryResponse, error) {
+func queryGrafanaDataSource(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions, grafanaURL string, query GrafanaDataSourceQueryBody) (QueryResponse, error) {
 	grafanaUser, grafanaPassword, err := fetchGrafanaCredentials(t, tenantKubectlOptions)
 	if err != nil {
 		return QueryResponse{}, err
@@ -80,7 +80,7 @@ func queryGrafanaDataSource(t *testing.T, c *http.Client, tenantKubectlOptions *
 		return QueryResponse{}, fmt.Errorf("expected no error when marshaling body, got %v", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "https://grafana.infra.sneakybugs.com/api/ds/query", bytes.NewReader(bodyBytes))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/ds/query", grafanaURL), bytes.NewReader(bodyBytes))
 	if err != nil {
 		return QueryResponse{}, fmt.Errorf("expected no error when creating new request, got %v", err)
 	}

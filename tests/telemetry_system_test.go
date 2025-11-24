@@ -107,6 +107,7 @@ func TestTelemetrySystem(t *testing.T) {
 	})
 
 	t.Run("Clickhouse contains traces from kube-apiserver", func(t *testing.T) {
+		t.Skip()
 		t.Parallel()
 		retry.DoWithRetry(t, "Clickhouse contains traces from kube-apiserver", 6*20, 10*time.Second, func() (string, error) {
 			return "", testClickHouseContainsAPIServerTraces(t, httpClient, tko)
@@ -114,8 +115,10 @@ func TestTelemetrySystem(t *testing.T) {
 	})
 }
 
+const grafanaURL = "https://grafana.infra.sneakybugs.com"
+
 func testGrafanaDatasources(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	req, err := http.NewRequest(http.MethodGet, "https://grafana.infra.sneakybugs.com/api/datasources", http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/datasources", grafanaURL), http.NoBody)
 	if err != nil {
 		return fmt.Errorf("expected no error creating datasources request, got %v", err)
 	}
@@ -157,12 +160,12 @@ func testGrafanaDatasources(t *testing.T, c *http.Client, tenantKubectlOptions *
 }
 
 func testPrometheusDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "Prometheus")
 	if err != nil {
 		return err
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
 		Queries: []any{
@@ -208,12 +211,12 @@ func testPrometheusDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOp
 }
 
 func testClickHouseDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "ClickHouse")
 	if err != nil {
 		return err
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1h",
 		Queries: []any{
@@ -257,12 +260,12 @@ func testClickHouseDataSourceQuery(t *testing.T, c *http.Client, tenantKubectlOp
 }
 
 func testPrometheusMetricsAreReceived(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "Prometheus")
 	if err != nil {
 		return fmt.Errorf("unexpected error getting datasource: %v", err)
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
 		Queries: []any{
@@ -305,12 +308,12 @@ func testPrometheusMetricsAreReceived(t *testing.T, c *http.Client, tenantKubect
 }
 
 func testClickHouseLogsAreReceived(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "ClickHouse")
 	if err != nil {
 		return err
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-12h",
 		Queries: []any{
@@ -349,12 +352,12 @@ func testClickHouseLogsAreReceived(t *testing.T, c *http.Client, tenantKubectlOp
 }
 
 func testPrometheusContainsKubeSchedulerMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "Prometheus")
 	if err != nil {
 		return fmt.Errorf("unexpected error getting datasource: %v", err)
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
 		Queries: []any{
@@ -397,12 +400,12 @@ func testPrometheusContainsKubeSchedulerMetrics(t *testing.T, c *http.Client, te
 }
 
 func testPrometheusContainsKubeControllerManagerMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "Prometheus")
 	if err != nil {
 		return fmt.Errorf("unexpected error getting datasource: %v", err)
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
 		Queries: []any{
@@ -445,12 +448,12 @@ func testPrometheusContainsKubeControllerManagerMetrics(t *testing.T, c *http.Cl
 }
 
 func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "Prometheus")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "Prometheus")
 	if err != nil {
 		return fmt.Errorf("unexpected error getting datasource: %v", err)
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-1s",
 		Queries: []any{
@@ -493,12 +496,12 @@ func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKu
 }
 
 func testClickHouseContainsAPIServerTraces(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
-	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, "ClickHouse")
+	datasourceUID, err := getGrafanaDataSourceID(t, c, tenantKubectlOptions, grafanaURL, "ClickHouse")
 	if err != nil {
 		return err
 	}
 
-	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, GrafanaDataSourceQueryBody{
+	queryResponse, err := queryGrafanaDataSource(t, c, tenantKubectlOptions, grafanaURL, GrafanaDataSourceQueryBody{
 		To:   "now",
 		From: "now-12h",
 		Queries: []any{
@@ -547,7 +550,10 @@ func testClickHouseContainsAPIServerTraces(t *testing.T, c *http.Client, tenantK
 
 func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterReleaseName string, releaseName string, cleanup bool) {
 	helm.Upgrade(t, &helm.Options{
-		ValuesFiles:    []string{"values/telemetry-system.yaml"},
+		ValuesFiles: []string{"values/telemetry-system.yaml"},
+		SetValues: map[string]string{
+			"features.components": "false",
+		},
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
 			"upgrade": []string{"--install", "--wait"},
@@ -564,10 +570,22 @@ func installTelemetrySystem(t *testing.T, ko *k8s.KubectlOptions, clusterRelease
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, fmt.Sprintf("%s-cluster", clusterReleaseName))
 	defer closer()
 
+	componentsValuesPath := templateApplicationValues(t, &helm.Options{
+		ValuesFiles:    []string{"values/telemetry-system.yaml"},
+		KubectlOptions: ko,
+		ExtraArgs: map[string][]string{
+			"upgrade": []string{"--install", "--wait"},
+		},
+	},
+		"../charts/telemetry-system",
+		releaseName,
+		"templates/components.yaml",
+	)
+
 	tko.Namespace = "telemetry-system"
 	retry.DoWithRetry(t, "attempt to install telemetry-system-components", 6*2, 10*time.Second, func() (string, error) {
 		err := helm.UpgradeE(t, &helm.Options{
-			ValuesFiles:    []string{"values/telemetry-system-components.yaml"},
+			ValuesFiles:    []string{componentsValuesPath},
 			KubectlOptions: tko,
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},

@@ -26,8 +26,8 @@ spec:
           rookNamespace: {{ .Values.config.velero.storage.rookNamespace }}
           credentialsSecretRemoteKey: rook-ceph-object-user-{{ .Values.config.velero.storage.cephObjectStoreName }}-{{ .Release.Namespace }}-{{ $name }}-backup-velero
         cephCSIRBD:
-          nodeClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-node
-          provisionerClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-provisioner
+          nodeClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-node
+          provisionerClientSecretRemoteKey: rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-provisioner
           cephPool: {{ .Values.config.cephCSIRBD.blockPoolName }}
           rookNamespace: {{ .Values.config.cephCSIRBD.rookNamespace }}
   destination:
