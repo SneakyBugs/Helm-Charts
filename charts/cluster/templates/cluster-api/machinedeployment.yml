@@ -8,8 +8,6 @@ metadata:
 spec:
   clusterName: {{ $name }}
   replicas: {{ .Values.nodes.worker.replicas }}
-  selector:
-    matchLabels:
   template:
     spec:
       clusterName: {{ $name }}
