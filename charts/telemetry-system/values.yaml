@@ -12,7 +12,7 @@ features:
   components: true
 
 versions:
-  components: 2.0.0
+  components: 2.0.1
   grafanaOperator: v5.19.4
   kubePrometheusStack: 77.11.0
   clickhouseOperator: 0.25.4
