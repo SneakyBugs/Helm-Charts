@@ -16,7 +16,9 @@ grafana:
   namespace: telemetry-system
   httproute:
     parentRefs:
-      - name: external
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: external
         namespace: envoy
     hostname: grafana.infra.sneakybugs.com
 

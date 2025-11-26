@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://schemas.tholinka.dev/gateway.networking.k8s.io/gatewayclass_v1.json
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/gateway.networking.k8s.io/gatewayclass_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
@@ -8,7 +8,7 @@ metadata:
 spec:
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
 ---
-# yaml-language-server: $schema=https://schemas.tholinka.dev/gateway.networking.k8s.io/gateway_v1.json
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -33,7 +33,8 @@ spec:
       hostname: {{ .Values.gateway.hostname | quote }}
       tls:
         certificateRefs:
-          - kind: Secret
+          - group: ""
+            kind: Secret
             name: {{ .Values.gateway.name }}-tls
       allowedRoutes:
         namespaces:
