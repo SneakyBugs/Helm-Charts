@@ -1,21 +1,16 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/objectbucket.io/objectbucketclaim_v1alpha1.json
-{{ if and .Values.features.backups (not .Values.config.velero.storage.existingObjectBucketClaim) -}}
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
-{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
-{{ $userName := printf "%s-%s-backup-velero" .Release.Namespace (include "cluster.fullname" .) -}}
+{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "postgres.fullname" .) -}}
+{{ $userName := $bucketName -}}
 metadata:
   name: {{ $bucketName }}
-  namespace: {{ .Values.config.velero.storage.rookNamespace }}
+  # namespace: {{ .Values.backups.rookNamespace }}
   labels:
-    {{- include "cluster.labels" . | nindent 4 }}
-  {{- if .Values.features.backups }}
-  annotations:
-    helm.sh/resource-policy: keep
-  {{- end }}
+    {{- include "postgres.labels" . | nindent 4 }}
 spec:
   bucketName: {{ $bucketName }}
-  storageClassName: {{ .Values.config.velero.storage.cephObjectBucketStorageClassName }}
+  storageClassName: {{ .Values.backups.cephObjectBucketStorageClassName }}
   additionalConfig:
     bucketPolicy: |
       {
@@ -43,20 +38,39 @@ spec:
               }
           ]
       }
-{{- end }}
 ---
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/ceph.rook.io/cephobjectstoreuser_v1.json
-{{ if and .Values.features.backups (not .Values.config.velero.storage.existingObjectBucketUser) -}}
-{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
-{{ $userName := printf "%s-%s-backup-velero" .Release.Namespace (include "cluster.fullname" .) -}}
 apiVersion: ceph.rook.io/v1
 kind: CephObjectStoreUser
 metadata:
   name: {{ $userName }}
-  namespace: {{ .Values.config.velero.storage.rookNamespace }}
+  # namespace: {{ .Values.backups.rookNamespace }}
   labels:
-    {{- include "cluster.labels" . | nindent 4 }}
+    {{- include "postgres.labels" . | nindent 4 }}
 spec:
-  store: {{ .Values.config.velero.storage.cephObjectStoreName }}
-  displayName: {{ $bucketName }} Velero backup
-{{- end }}
+  store: {{ .Values.backups.cephObjectStoreName }}
+  displayName: {{ $bucketName }} backup
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/barmancloud.cnpg.io/objectstore_v1.json
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: {{ include "postgres.fullname" . }}
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+spec:
+  retentionPolicy: {{ .Values.backups.retentionPolicy }}
+  configuration:
+    destinationPath: s3://{{ $bucketName }}/
+    endpointURL: {{ .Values.backups.s3Endpoint }}
+    s3Credentials:
+      accessKeyId:
+        name: {{ $userName }}
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: {{ $userName }}
+        key: AWS_SECRET_ACCESS_KEY
+    data:
+      compression: bzip2
+    wal:
+      compression: bzip2

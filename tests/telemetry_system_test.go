@@ -5,45 +5,28 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 func TestTelemetrySystem(t *testing.T) {
 	t.Parallel()
 
-	namespace := fmt.Sprintf("cluster-test-%s", strings.ToLower(random.UniqueId()))
-	existingNamespace, useExistingNamespace := os.LookupEnv("TEST_USE_EXISTING_NAMESPACE")
-	if useExistingNamespace {
-		namespace = existingNamespace
-	}
-	ko, dyn := createKubectlOptionsAndDynamicClient(t, namespace)
-
 	_, skipDeletion := os.LookupEnv("TEST_SKIP_DELETION")
-
-	if !useExistingNamespace {
-		if !skipDeletion {
-			t.Cleanup(func() {
-				k8s.DeleteNamespace(t, ko, namespace)
-			})
-		}
-		k8s.CreateNamespace(t, ko, namespace)
-	}
+	ko, dyn := createKubectlOptionsAndDynamicClient(t, "cluster-test", !skipDeletion)
 
 	installCluster(t, ko, "test", !skipDeletion)
 
 	// Wait until cluster is ready.
-	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test", 6*30, 10*time.Second)
+	checkAllSubApplicationsAreSynced(t, ko, dyn, ko.Namespace, "test", 6*30, 10*time.Second)
 
 	installTelemetrySystem(t, ko, "test", "test-telemetry-system", !skipDeletion)
 
-	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test-telemetry-system", 0, 10*time.Second)
+	checkAllSubApplicationsAreSynced(t, ko, dyn, ko.Namespace, "test-telemetry-system", 0, 10*time.Second)
 
 	tko, _, closer := createTenantKubectlOptionsAndDynamicClient(t, ko, "test-cluster")
 	t.Cleanup(closer)
@@ -115,7 +98,7 @@ func TestTelemetrySystem(t *testing.T) {
 	})
 }
 
-const grafanaURL = "https://grafana.infra.sneakybugs.com"
+const grafanaURL = "https://grafana.dev.sneakybugs.com"
 
 func testGrafanaDatasources(t *testing.T, c *http.Client, tenantKubectlOptions *k8s.KubectlOptions) error {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/datasources", grafanaURL), http.NoBody)
@@ -295,6 +278,10 @@ func testPrometheusMetricsAreReceived(t *testing.T, c *http.Client, tenantKubect
 		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
 	}
 
+	if len(result.Frames[0].Data.Values) != 2 {
+		return fmt.Errorf("expected result.Frames[0].Data.Values to be of length 2, got %d", len(result.Frames[0].Data.Values))
+	}
+
 	v, ok := result.Frames[0].Data.Values[0][0].(float64)
 	if !ok {
 		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
@@ -387,6 +374,9 @@ func testPrometheusContainsKubeSchedulerMetrics(t *testing.T, c *http.Client, te
 		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
 	}
 
+	if len(result.Frames[0].Data.Values) != 2 {
+		return fmt.Errorf("expected result.Frames[0].Data.Values to be of length 2, got %d", len(result.Frames[0].Data.Values))
+	}
 	v, ok := result.Frames[0].Data.Values[1][0].(float64)
 	if !ok {
 		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
@@ -435,6 +425,10 @@ func testPrometheusContainsKubeControllerManagerMetrics(t *testing.T, c *http.Cl
 		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
 	}
 
+	if len(result.Frames[0].Data.Values) != 2 {
+		return fmt.Errorf("expected result.Frames[0].Data.Values to be of length 2, got %d", len(result.Frames[0].Data.Values))
+	}
+
 	v, ok := result.Frames[0].Data.Values[1][0].(float64)
 	if !ok {
 		return fmt.Errorf("expected result values to be of type float64, got %s", reflect.TypeOf(result.Frames[0].Data.Values[0][0]))
@@ -481,6 +475,10 @@ func testPrometheusContainsKubeletMetrics(t *testing.T, c *http.Client, tenantKu
 
 	if len(result.Frames) != 1 {
 		return fmt.Errorf("expected query result frames to be of length 1, got %d", len(result.Frames))
+	}
+
+	if len(result.Frames[0].Data.Values) != 2 {
+		return fmt.Errorf("expected result.Frames[0].Data.Values to be of length 2, got %d", len(result.Frames[0].Data.Values))
 	}
 
 	v, ok := result.Frames[0].Data.Values[1][0].(float64)

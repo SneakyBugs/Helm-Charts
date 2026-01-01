@@ -20,6 +20,13 @@ spec:
           - service
           - gateway-grpcroute
           - gateway-httproute
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
         provider:
           name: webhook
           webhook:

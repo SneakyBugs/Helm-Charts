@@ -7,7 +7,7 @@ metadata:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
   clusterName: {{ $name }}
-  replicas: {{ .Values.nodes.worker.replicas }}
+  replicas: {{ .Values.config.workers.replicas }}
   template:
     spec:
       clusterName: {{ $name }}
@@ -19,7 +19,7 @@ spec:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
       infrastructureRef:
-        name: {{ $name }}-worker
+        name: {{ $name }}-{{ .Values.config.workers.machineTemplate }}
         namespace: {{ .Release.Namespace }}
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
         kind: KubevirtMachineTemplate

@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
 {{ if .Values.features.backups -}}
 {{ $name := include "cluster.fullname" . -}}
-{{ $bucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
+{{ $defaultBucketName := printf "%s-%s-backup" .Release.Namespace (include "cluster.fullname" .) -}}
+{{ $bucketName := default $defaultBucketName .Values.config.velero.storage.existingObjectBucketClaim }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -32,7 +33,7 @@ spec:
         snapshotsEnabled: false
         deployNodeAgent: true
         configuration:
-          defaultVolumeToFsBackup: true
+          features: EnableCSI
           backupStorageLocation:
             - name: default
               provider: aws
@@ -54,6 +55,21 @@ spec:
             schedule: {{ .Values.config.velero.backup.schedule | quote }}
             template:
               ttl: {{ .Values.config.velero.backup.ttl }}
+        resources:
+          limits:
+            cpu: 250m
+            memory: 512Mi
+          requests:
+            cpu: 125m
+            memory: 256Mi
+        nodeAgent:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: velero

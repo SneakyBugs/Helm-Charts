@@ -19,6 +19,8 @@ spec:
       valuesObject:
         openTelemetry:
           exporterOTLPEndpoint: {{ .Values.config.otlpExporter.endpoint }}
+          clusterAttributeValue: {{ $name }}
+          clusterNamespaceAttributeValue: {{ .Release.Namespace }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
     namespace: default

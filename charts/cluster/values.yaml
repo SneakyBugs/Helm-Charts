@@ -17,9 +17,10 @@ versions:
   openTelemetryOperator: 0.97.1 # OpenTelemetry Operator chart version to deploy.
   velero: 11.1.1 # Velero chart version to deploy.
   veleroPluginForAWS: 1.12.2 # Velero AWS plugin version to deploy.
-  kro: 0.4.1 # Kro version to deploy.
+  kro: 0.7.1 # Kro version to deploy.
   cephCSIRBD: 3.15.0 # ceph-csi-rbd version to deploy.
   metricsServer: 3.13.0 # Metrics server version to deploy.
+  externalSnapshotter: v8.4.0 # external-snapshotter version to deploy.
 
 features:
   backups: true # Enable Velero backups when true.
@@ -31,48 +32,69 @@ features:
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
-  image: https://vmi.infra.sneakybugs.com/images/rocky-10.0-k8s-1.34.1-26a50db-20251016.0.qcow2 # Node image to use.
-  version: v1.34.1 # Kubernetes version of the node image.
+  version: v1.34.2 # Kubernetes version of the node image.
+
+  controlPlane:
+    replicas: 1 # Control plane node count.
+    machineTemplate: cp1
+  workers:
+    replicas: 1 # Worker node count.
+    machineTemplate: worker1
+
+  machineTemplates:
+    - name: cp1
+      image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
+      resources:
+        storage: 16Gi # Control plane node disk size.
+        cores: 2 # Control plane node core count.
+        memory: 4Gi # Control plane node RAM size.
+    - name: worker1
+      image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
+      resources:
+        storage: 32Gi # Worker node disk size.
+        cores: 8 # Worker node core count.
+        memory: 16Gi # Worker node RAM size.
 
   cephCSIRBD:
+    existingRadosNamespace: null # When specified the cluster will use an existing Rados namespace instead of creating one.
     rookNamespace: rook-ceph
     blockPoolName: ceph-blockpool
     cephMonitors:
-      - 10.0.0.0:6789
+      - 10.1.0.10:6789
 
   imageRegistries:
     - prefix: docker.io
-      location: oci.infra.sneakybugs.com/docker
+      location: oci.infra.f6n.io/docker
     - prefix: quay.io
-      location: oci.infra.sneakybugs.com/quay
+      location: oci.infra.f6n.io/quay
     - prefix: ghcr.io
-      location: oci.infra.sneakybugs.com/ghcr
+      location: oci.infra.f6n.io/ghcr
     - prefix: registry.k8s.io
-      location: oci.infra.sneakybugs.com/k8s
+      location: oci.infra.f6n.io/k8s
     - prefix: oci.external-secrets.io
-      location: oci.infra.sneakybugs.com/external-secrets
+      location: oci.infra.f6n.io/external-secrets
 
   gateway:
     hostname: '*.infra.sneakybugs.com'
 
   otlpExporter:
-    endpoint: otel.infra.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
+    endpoint: otel.infra.f6n.io:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
 
   externalSecrets: # Values for cluster-components chart externalSecrets field.
     remoteNamespace: tenant-secrets
+    url: https://10.1.0.10:6443
 
   externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
     repository: ghcr.io/sneakybugs/corewarden-externaldns-provider
-    tag: 4.1.2
+    apiEndpoint: https://dns.infra.f6n.io/v1 # DNS API server endpoint.
+    tag: 4.1.3
     # zones:
     #   - example.com.
     # externalSecret:
     #   remoteKey: external-dns
 
   certManager: {} # Values for cluster-components chart certManager field.
-    # cloudflareZones:
-    #   - example.com
-    # cloudflareEmail: example@example.com
+    # stagingEnvironment: false
     # externalSecret:
     #   remoteKey: cert-manager
 
@@ -81,9 +103,11 @@ config:
       rookNamespace: rook-ceph # Rook namespace to use for backup ObjectBucketClaim in the management cluster.
       cephObjectStoreName: ceph-objectstore # Rook CephObjectStore to use for the bucket in the management cluster.
       cephObjectBucketStorageClassName: ceph-bucket # Rook StorageClass name to use for the bucket in the management cluster.
-      s3Url: https://vmi.infra.sneakybugs.com # S3 endpoint URL for backup storage.
+      s3Url: https://objects.infra.f6n.io # S3 endpoint URL for backup storage.
       prefix: "" # Prefix to store backups in the S3 bucket, defaults to <namespace>:<cluster-name> if unspecified.
       accessMode: ReadWrite # Backup location access mode, ReadWrite or ReadOnly.
+      existingObjectBucketClaim: null
+      existingObjectBucketUser: null
     backup:
       schedule: "0 4 * * *" # Cron schedule to perform backups at.
       ttl: 720h # Time to keep backups.
@@ -108,18 +132,3 @@ config:
           - selfsubjectrulesreviews
         verbs:
           - create
-
-nodes:
-  controlPlane:
-    replicas: 1 # Control plane node count.
-    resources:
-      storage: 16Gi # Control plane node disk size.
-      cores: 2 # Control plane node core count.
-      memory: 4Gi # Control plane node RAM size.
-
-  worker:
-    replicas: 1 # Worker node count.
-    resources:
-      storage: 32Gi # Worker node disk size.
-      cores: 4 # Worker node core count.
-      memory: 8Gi # Worker node RAM size.

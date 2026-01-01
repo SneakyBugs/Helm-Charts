@@ -1,14 +1,13 @@
-features:
-  components: false
-  exporterComponents: false
-
 config:
-  externalDNSWebhook: # Values for cluster-components chart externalDNSWebhook field.
+  externalDNSWebhook:
     zones:
       - sneakybugs.com.
 
-  certManager: # Values for cluster-components chart certManager field.
+  gateway:
+    hostname: "*.dev.sneakybugs.com"
+
+  certManager:
     stagingEnvironment: true
-    cloudflareZones:
-      - sneakybugs.com
-    cloudflareEmail: LKummer41@gmail.com
+
+  otlpExporter:
+    endpoint: otel.dev.sneakybugs.com:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.

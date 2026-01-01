@@ -98,6 +98,14 @@ spec:
 
     processors:
       batch: {}
+      attributes:
+        actions:
+          - key: cluster.name
+            action: upsert
+            value: {{ .Values.openTelemetry.clusterAttributeValue }}
+          - key: cluster.namespace
+            action: upsert
+            value: {{ .Values.openTelemetry.clusterNamespaceAttributeValue }}
       k8sattributes:
         extract:
           labels:
@@ -132,13 +140,13 @@ spec:
       pipelines:
         metrics:
           receivers: [otlp, prometheus]
-          processors: [batch]
+          processors: [attributes, batch]
           exporters: [otlp]
         logs:
           receivers: [filelog]
-          processors: [k8sattributes, batch]
+          processors: [k8sattributes, attributes, batch]
           exporters: [otlp]
         traces:
           receivers: [otlp]
-          processors: [batch]
+          processors: [attributes, batch]
           exporters: [otlp]

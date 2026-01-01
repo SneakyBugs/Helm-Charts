@@ -3,53 +3,46 @@ package tests
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 func TestCluster(t *testing.T) {
 	t.Parallel()
 
-	namespace := fmt.Sprintf("cluster-test-%s", strings.ToLower(random.UniqueId()))
-	existingNamespace, useExistingNamespace := os.LookupEnv("TEST_USE_EXISTING_NAMESPACE")
-	if useExistingNamespace {
-		namespace = existingNamespace
-	}
-	ko, dyn := createKubectlOptionsAndDynamicClient(t, namespace)
-
 	_, skipDeletion := os.LookupEnv("TEST_SKIP_DELETION")
-
-	if !useExistingNamespace {
-		if !skipDeletion {
-			t.Cleanup(func() {
-				k8s.DeleteNamespace(t, ko, namespace)
-			})
-		}
-		k8s.CreateNamespace(t, ko, namespace)
-	}
+	ko, dyn := createKubectlOptionsAndDynamicClient(t, "cluster-test", !skipDeletion)
 
 	installCluster(t, ko, "test", !skipDeletion)
 
 	// Wait until cluster is ready.
-	checkAllSubApplicationsAreSynced(t, ko, dyn, namespace, "test", 6*30, 10*time.Second)
+	checkAllSubApplicationsAreSynced(t, ko, dyn, ko.Namespace, "test", 6*30, 10*time.Second)
 }
 
 func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cleanup bool) {
+	installClusterWithSetValues(t, ko, releaseName, map[string]string{}, cleanup)
+}
+
+func installClusterWithSetValues(t *testing.T, ko *k8s.KubectlOptions, releaseName string, setValues map[string]string, cleanup bool) {
+	setValuesOverrides := map[string]string{
+		"features.components":         "false",
+		"features.exporterComponents": "false",
+	}
+	for key, value := range setValues {
+		setValuesOverrides[key] = value
+	}
+
+	valuesFile := "values/cluster.yaml"
 	helm.Upgrade(t, &helm.Options{
-		ValuesFiles: []string{"values/cluster.yaml"},
-		SetValues: map[string]string{
-			"features.components":         "false",
-			"features.exporterComponents": "false",
-		},
+		ValuesFiles:    []string{valuesFile},
+		SetValues:      setValuesOverrides,
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
-			"upgrade": []string{"--install", "--wait"},
+			"upgrade": {"--install", "--wait"},
 		},
 	}, "../charts/cluster", releaseName)
 	if cleanup {
@@ -64,10 +57,11 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 	defer closer()
 
 	componentsValuesPath := templateApplicationValues(t, &helm.Options{
-		ValuesFiles:    []string{"values/cluster.yaml"},
+		ValuesFiles:    []string{valuesFile},
+		SetValues:      setValues,
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
-			"upgrade": []string{"--install", "--wait"},
+			"upgrade": {"--install", "--wait"},
 		},
 	},
 		"../charts/cluster",
@@ -77,8 +71,9 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 
 	retry.DoWithRetry(t, "attempt to install cluster-components", 6*20, 10*time.Second, func() (string, error) {
 		err := helm.UpgradeE(t, &helm.Options{
-			KubectlOptions: tko,
 			ValuesFiles:    []string{componentsValuesPath},
+			SetValues:      setValues,
+			KubectlOptions: tko,
 			ExtraArgs: map[string][]string{
 				"upgrade": []string{"--install", "--wait", "--take-ownership"},
 			},
@@ -90,10 +85,11 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 	})
 
 	exporterComponentsValuesPath := templateApplicationValues(t, &helm.Options{
-		ValuesFiles:    []string{"values/cluster.yaml"},
+		ValuesFiles:    []string{valuesFile},
+		SetValues:      setValues,
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
-			"upgrade": []string{"--install", "--wait"},
+			"upgrade": {"--install", "--wait"},
 		},
 	},
 		"../charts/cluster",
@@ -105,8 +101,9 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 		err := helm.UpgradeE(t, &helm.Options{
 			KubectlOptions: tko,
 			ValuesFiles:    []string{exporterComponentsValuesPath},
+			SetValues:      setValues,
 			ExtraArgs: map[string][]string{
-				"upgrade": []string{"--install", "--wait", "--take-ownership"},
+				"upgrade": {"--install", "--wait", "--take-ownership"},
 			},
 		}, "../charts/telemetry-exporter-components", "telemetry-exporter-components")
 		if err != nil {

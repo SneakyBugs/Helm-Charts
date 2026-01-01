@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/issuer_v1.json
+{{ $fullname := include "postgres.fullname" . -}}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $fullname }}-selfsigned
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullname }}-tls-root
+spec:
+  isCA: true
+  commonName: {{ $fullname }}.{{ .Release.Namespace }}.cluster.local/root
+  secretName: {{ $fullname }}-tls
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  issuerRef:
+    name: {{ $fullname }}-selfsigned
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/issuer_v1.json
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $fullname }}-tls
+spec:
+  ca:
+    secretName: {{ $fullname }}-tls
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullname }}-tls-server
+spec:
+  commonName: {{ $fullname }}.{{ .Release.Namespace }}.cluster.local/server
+  dnsNames:
+    - {{ $fullname }}.{{ .Release.Namespace }}.svc.cluster.local
+    - {{ .Values.hostname }}
+  secretName: {{ $fullname }}-tls-server
+  secretTemplate:
+    labels:
+      cnpg.io/reload: ""
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - server auth
+  issuerRef:
+    name: {{ $fullname }}-tls
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullname }}-tls-replication
+spec:
+  commonName: streaming_replica
+  secretName: {{ $fullname }}-tls-replication
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $fullname }}-tls
+    kind: Issuer
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullname }}-tls-app
+spec:
+  {{- with .Values.bootstrap.recovery }}
+  commonName: {{ .owner }}
+  {{- else }}
+  commonName: {{ .Values.bootstrap.initdb.owner }}
+  {{- end }}
+  secretName: {{ $fullname }}-tls-app
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $fullname }}-tls
+    kind: Issuer

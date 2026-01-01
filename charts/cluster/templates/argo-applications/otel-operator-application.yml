@@ -18,6 +18,13 @@ spec:
       releaseName: opentelemetry-operator
       valuesObject:
         manager:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
           collectorImage:
             repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib
   destination:

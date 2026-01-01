@@ -20,9 +20,9 @@ versions:
 config:
   grafana:
     httproute:
-      hostname: grafana.infra.sneakybugs.com
+      hostname: grafana.example.com
 
   otel:
     service:
       annotations:
-        external-dns.alpha.kubernetes.io/hostname: otel.infra.sneakybugs.com
+        external-dns.alpha.kubernetes.io/hostname: otel.example.com

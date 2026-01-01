@@ -7,12 +7,12 @@ metadata:
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.nodes.controlPlane.replicas }}
+  replicas: {{ .Values.config.controlPlane.replicas }}
   machineTemplate:
     infrastructureRef:
       kind: KubevirtMachineTemplate
       apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
-      name: {{ $name }}-control-plane
+      name: {{ $name }}-{{ .Values.config.controlPlane.machineTemplate }}
       namespace: {{ .Release.Namespace }}
   kubeadmConfigSpec:
     clusterConfiguration:

@@ -11,11 +11,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -25,7 +27,27 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func createKubectlOptionsAndDynamicClient(t *testing.T, namespace string) (*k8s.KubectlOptions, *dynamic.DynamicClient) {
+func createKubectlOptionsAndDynamicClient(t *testing.T, namespacePrefix string, cleanup bool) (*k8s.KubectlOptions, *dynamic.DynamicClient) {
+	namespace := fmt.Sprintf("%s-%s", namespacePrefix, strings.ToLower(random.UniqueId()))
+	existingNamespace, useExistingNamespace := os.LookupEnv("TEST_USE_EXISTING_NAMESPACE")
+	if useExistingNamespace {
+		namespace = existingNamespace
+	}
+
+	ko, dyn := createNamespacedKubectlOptionsAndDynamicClient(t, namespace)
+
+	if !useExistingNamespace {
+		if cleanup {
+			t.Cleanup(func() {
+				k8s.DeleteNamespace(t, ko, namespace)
+			})
+		}
+		k8s.CreateNamespace(t, ko, namespace)
+	}
+
+	return ko, dyn
+}
+func createNamespacedKubectlOptionsAndDynamicClient(t *testing.T, namespace string) (*k8s.KubectlOptions, *dynamic.DynamicClient) {
 	kubectlOptions := k8s.NewKubectlOptions("", "", namespace)
 	kubeconfigPath, err := k8s.GetKubeConfigPathE(t)
 	if err != nil {

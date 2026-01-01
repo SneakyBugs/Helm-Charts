@@ -17,7 +17,11 @@ rules:
     resourceNames:
       - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-node
       - rook-ceph-client-{{ .Release.Namespace }}-{{ $name }}-csi-rbd-provisioner
-      - rook-ceph-object-user-ceph-objectstore-{{ .Release.Namespace }}-{{ $name }}-backup-velero
+      {{- if .Values.config.velero.storage.existingObjectBucketUser }}
+      - rook-ceph-object-user-{{ .Values.config.velero.storage.cephObjectStoreName }}-{{ .Values.config.velero.storage.existingObjectBucketUser }}
+      {{- else }}
+      - rook-ceph-object-user-{{ .Values.config.velero.storage.cephObjectStoreName }}-{{ .Release.Namespace }}-{{ $name }}-backup-velero
+      {{- end }}
   - apiGroups:
       - authorization.k8s.io
     resources:

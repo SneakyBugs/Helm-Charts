@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-volume-backup-reader
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: backup-reader
+        image: quay.io/lib/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - test "$(cat /data/example)" = "hello"
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: test-volume-backup

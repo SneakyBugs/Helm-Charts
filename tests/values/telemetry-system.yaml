@@ -1,1 +1,11 @@
 destinationCluster: test-cluster
+
+config:
+  grafana:
+    httproute:
+      hostname: grafana.dev.sneakybugs.com
+
+  otel:
+    service:
+      annotations:
+        external-dns.alpha.kubernetes.io/hostname: otel.dev.sneakybugs.com

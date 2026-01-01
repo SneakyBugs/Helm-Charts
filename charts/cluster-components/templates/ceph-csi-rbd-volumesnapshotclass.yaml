@@ -1,0 +1,15 @@
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+  name: ceph-block
+  labels:
+    {{- include "cluster-components.labels" . | nindent 4 }}
+driver: rbd.csi.ceph.com
+deletionPolicy: Delete
+parameters:
+  clusterID: {{ .Values.cephCSIRBD.cephClusterID }}
+  pool: {{ .Values.cephCSIRBD.cephPool }}
+  csi.storage.k8s.io/snapshotter-secret-name: ceph-csi-rbd-provisioner
+  csi.storage.k8s.io/snapshotter-secret-namespace: {{ .Values.cephCSIRBD.namespace }}

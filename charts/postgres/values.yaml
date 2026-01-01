@@ -1,0 +1,46 @@
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# imageName: 
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/cloudnative-pg/postgresql
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+hostname: pg.example.com
+instances: 1
+bootstrap:
+  initdb:
+    database: example
+    owner: example
+externalClusters: []
+
+storage:
+  size: 8Gi
+  storageClass: ceph-block
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 250m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 250m
+  #   memory: 512Mi
+
+backups:
+  rookNamespace: rook-ceph
+  cephObjectStoreName: ceph-objectstore # Rook CephObjectStore to use for the bucket in the management cluster.
+  cephObjectBucketStorageClassName: ceph-bucket # Rook StorageClass name to use for the bucket in the management cluster.
+  schedule: "0 0 0 * * SUN"  # Every Sunday on 12PM.
+  # s3Endpoint: https://objects.infra.sneakybugs.com
+  s3Endpoint: https://objects.management.linuxdweller.com
+  retentionPolicy: 90d
+
+service:
+  type: ClusterIP

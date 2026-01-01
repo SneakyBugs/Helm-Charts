@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/postgresql.cnpg.io/cluster_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "postgres.fullname" . }}
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+spec:
+  postgresql:
+    pg_hba:
+      - hostssl all all 0.0.0.0/0 cert
+  certificates:
+    serverTLSSecret: {{ include "postgres.fullname" . }}-tls-server
+    serverCASecret: {{ include "postgres.fullname" . }}-tls-server
+    clientCASecret: {{ include "postgres.fullname" . }}-tls
+    replicationTLSSecret: {{ include "postgres.fullname" . }}-tls-replication
+  managed:
+    services:
+      additional:
+        - selectorType:  rw
+          serviceTemplate:
+            spec:
+              type: {{ .Values.service.type }}
+            metadata:
+              name: {{ include "postgres.fullname" . }}
+              annotations:
+                external-dns.alpha.kubernetes.io/hostname: {{ .Values.hostname }}
+  bootstrap: {{- toYaml .Values.bootstrap | nindent 4 }}
+  imageName: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+  instances: {{ .Values.instances }}
+  resources: {{- toYaml .Values.resources | nindent 4 }}
+  storage: {{- toYaml .Values.storage | nindent 4 }}
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: {{ include "postgres.fullname" . }}
+  externalClusters: {{- toYaml .Values.externalClusters | nindent 4 }}
+---
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/postgresql.cnpg.io/scheduledbackup_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: {{ include "postgres.fullname" . }}
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.backups.schedule }}
+  backupOwnerReference: self
+  cluster:
+    name: {{ include "postgres.fullname" . }}
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

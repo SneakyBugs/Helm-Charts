@@ -16,6 +16,15 @@ spec:
     helm:
       skipCrds: true
       valuesObject:
+        deployment:
+          envoyGateway:
+            resources:
+              limits:
+                cpu: 500m
+                memory: 1024Mi
+              requests:
+                cpu: 100m
+                memory: 256Mi
         certgen:
           job:
             tolerations:

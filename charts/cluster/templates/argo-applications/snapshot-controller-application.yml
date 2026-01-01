@@ -1,33 +1,21 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/argoproj.io/application_v1alpha1.json
-{{ if .Values.features.kro -}}
 {{ $name := include "cluster.fullname" . -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ .Release.Namespace }}-{{ $name }}-kro
+  name: {{ .Release.Namespace }}-{{ $name }}-snapshot-controller
   namespace: {{ .Values.argocdNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
   project: {{ .Release.Namespace }}-{{ $name }}-system
   source:
-    chart: kro
-    repoURL: registry.k8s.io/kro/charts
-    targetRevision: {{ .Values.versions.kro }}
-    helm:
-      releaseName: kro
-      valuesObject:
-        deployment:
-          resources:
-            limits:
-              cpu: 200m
-              memory: 256Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
+    repoURL: https://github.com/kubernetes-csi/external-snapshotter.git
+    path: deploy/kubernetes/snapshot-controller
+    targetRevision: {{ .Values.versions.externalSnapshotter }}
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
-    namespace: kro
+    namespace: kube-system
   syncPolicy:
     automated:
       selfHeal: true
@@ -41,4 +29,3 @@ spec:
         duration: 15s
         factor: 2
         maxDuration: 60s
-{{- end }}

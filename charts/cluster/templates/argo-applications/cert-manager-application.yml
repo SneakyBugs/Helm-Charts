@@ -16,6 +16,8 @@ spec:
     helm:
       releaseName: cert-manager
       valuesObject:
+        extraArgs:
+          - --dns01-recursive-nameservers=1.1.1.1:53
         crds:
           enabled: true
         config:

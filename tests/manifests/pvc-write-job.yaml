@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-volume-backup
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-volume-backup-writer
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: backup-restore
+        image: quay.io/lib/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - echo hello > /data/example
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: test-volume-backup

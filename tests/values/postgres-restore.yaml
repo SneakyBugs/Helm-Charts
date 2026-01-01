@@ -1,0 +1,15 @@
+bootstrap:
+  initdb: null
+  recovery:
+    source: origin
+    database: example
+    owner: example
+externalClusters:
+  - name: origin
+    plugin:
+      name: barman-cloud.cloudnative-pg.io
+      parameters:
+        barmanObjectName: postgres
+        serverName: postgres
+certificates:
+  appUserOverride: example

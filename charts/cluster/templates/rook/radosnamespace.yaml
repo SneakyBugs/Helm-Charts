@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/ceph.rook.io/cephblockpoolradosnamespace_v1.json
+{{- if not .Values.config.cephCSIRBD.existingRadosNamespace }}
 apiVersion: ceph.rook.io/v1
 kind: CephBlockPoolRadosNamespace
 metadata:
@@ -8,5 +9,9 @@ metadata:
     {{- include "cluster.labels" . | nindent 4 }}
   annotations:
     rook.io/force-deletion: "true"
+    {{- if .Values.features.backups }}
+    helm.sh/resource-policy: keep
+    {{- end }}
 spec:
   blockPoolName: {{ .Values.config.cephCSIRBD.blockPoolName }}
+{{- end }}

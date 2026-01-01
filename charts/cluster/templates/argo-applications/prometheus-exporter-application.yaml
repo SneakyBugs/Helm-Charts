@@ -47,6 +47,14 @@ spec:
           enabled: false
         nodeExporter:
           enabled: false
+        prometheus-node-exporter:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
         grafana:
           enabled: false
         kubeApiServer:

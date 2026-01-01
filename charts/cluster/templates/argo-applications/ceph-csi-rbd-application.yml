@@ -35,7 +35,8 @@ spec:
           monitors: {{- toYaml .Values.config.cephCSIRBD.cephMonitors | nindent 12 }}
           rbd:
             netNamespaceFilePath: ''
-            radosNamespace: {{ .Release.Namespace }}-{{ include "cluster.fullname" . }}
+            {{- $defaultRadosNamespace := printf "%s-%s" .Release.Namespace (include "cluster.fullname" .) }}
+            radosNamespace: {{ default $defaultRadosNamespace .Values.config.cephCSIRBD.existingRadosNamespace }}
             mirrorDaemonCount: 0
   destination:
     name: {{ .Release.Namespace }}/{{ $name }}
