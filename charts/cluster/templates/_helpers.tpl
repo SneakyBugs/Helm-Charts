@@ -40,3 +40,8 @@ app.kubernetes.io/part-of: {{ .Release.Namespace }}-{{ include "cluster.fullname
 app.kubernetes.io/version: {{ .Chart.Version | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
+
+{{- define "cluster.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cluster.fullname" . }}
+app.kubernetes.io/part-of: {{ .Release.Namespace }}-{{ include "cluster.fullname" . }}
+{{- end -}}

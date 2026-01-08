@@ -33,27 +33,20 @@ config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
   version: v1.34.2 # Kubernetes version of the node image.
+  image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
 
   controlPlane:
     replicas: 1 # Control plane node count.
-    machineTemplate: cp1
+    resources:
+      storage: 16Gi # Control plane node disk size.
+      cores: 2 # Control plane node core count.
+      memory: 4Gi # Control plane node RAM size.
   workers:
     replicas: 1 # Worker node count.
-    machineTemplate: worker1
-
-  machineTemplates:
-    - name: cp1
-      image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
-      resources:
-        storage: 16Gi # Control plane node disk size.
-        cores: 2 # Control plane node core count.
-        memory: 4Gi # Control plane node RAM size.
-    - name: worker1
-      image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
-      resources:
-        storage: 32Gi # Worker node disk size.
-        cores: 8 # Worker node core count.
-        memory: 16Gi # Worker node RAM size.
+    resources:
+      storage: 32Gi # Worker node disk size.
+      cores: 4 # Worker node core count.
+      memory: 8Gi # Worker node RAM size.
 
   cephCSIRBD:
     existingRadosNamespace: null # When specified the cluster will use an existing Rados namespace instead of creating one.

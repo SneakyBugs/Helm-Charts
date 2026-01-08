@@ -1,25 +1,30 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cluster.x-k8s.io/machinedeployment_v1beta2.json
 {{ $name := include "cluster.fullname" . -}}
-apiVersion: cluster.x-k8s.io/v1beta1
+apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
 metadata:
   name: {{ $name }}-md-0
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
 spec:
+  selector:
+    matchLabels: {{- include "cluster.selectorLabels" .  | nindent 6 }}
   clusterName: {{ $name }}
   replicas: {{ .Values.config.workers.replicas }}
   template:
+    metadata:
+      labels: {{- include "cluster.selectorLabels" .  | nindent 8 }}
     spec:
       clusterName: {{ $name }}
       version: {{ .Values.config.version | quote }}
       bootstrap:
         configRef:
           name: {{ $name }}
-          namespace: {{ .Release.Namespace }}
-          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          apiGroup: bootstrap.cluster.x-k8s.io
           kind: KubeadmConfigTemplate
       infrastructureRef:
-        name: {{ $name }}-{{ .Values.config.workers.machineTemplate }}
-        namespace: {{ .Release.Namespace }}
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+        {{- $wConfig := printf "%s:%s" .Values.config.image (toJson (omit .Values.config.workers "replicas")) }}
+        {{- $wID := sha256sum $wConfig | trunc 8 }}
+        name: {{ $name }}-workers-{{ $wID }}
+        apiGroup: infrastructure.cluster.x-k8s.io
         kind: KubevirtMachineTemplate

@@ -9,10 +9,9 @@ metadata:
   namespace: {{ .Values.config.velero.storage.rookNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
-  {{- if .Values.features.backups }}
   annotations:
+    {{- /* Bucket is required for restoring clusters after the Helm release is deleted. */}}
     helm.sh/resource-policy: keep
-  {{- end }}
 spec:
   bucketName: {{ $bucketName }}
   storageClassName: {{ .Values.config.velero.storage.cephObjectBucketStorageClassName }}
@@ -56,6 +55,8 @@ metadata:
   namespace: {{ .Values.config.velero.storage.rookNamespace }}
   labels:
     {{- include "cluster.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
 spec:
   store: {{ .Values.config.velero.storage.cephObjectStoreName }}
   displayName: {{ $bucketName }} Velero backup

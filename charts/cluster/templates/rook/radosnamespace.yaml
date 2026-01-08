@@ -10,6 +10,7 @@ metadata:
   annotations:
     rook.io/force-deletion: "true"
     {{- if .Values.features.backups }}
+    {{- /* Volume snapshots are stored in the Rados namespace and are required for restoring from backup. */}}
     helm.sh/resource-policy: keep
     {{- end }}
 spec:

@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/controlplane.cluster.x-k8s.io/kubeadmcontrolplane_v1beta1.json
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/controlplane.cluster.x-k8s.io/kubeadmcontrolplane_v1beta2.json
 {{ $name := include "cluster.fullname" . -}}
 kind: KubeadmControlPlane
-apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
 metadata:
   name: {{ include "cluster.fullname" . }}
   labels:
@@ -9,36 +9,40 @@ metadata:
 spec:
   replicas: {{ .Values.config.controlPlane.replicas }}
   machineTemplate:
-    infrastructureRef:
-      kind: KubevirtMachineTemplate
-      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
-      name: {{ $name }}-{{ .Values.config.controlPlane.machineTemplate }}
-      namespace: {{ .Release.Namespace }}
+    spec:
+      infrastructureRef:
+        kind: KubevirtMachineTemplate
+        apiGroup: infrastructure.cluster.x-k8s.io
+        {{- $cpConfig := printf "%s:%s" .Values.config.image (toJson (omit .Values.config.controlPlane "replicas")) }}
+        {{- $cpID := sha256sum $cpConfig | trunc 8 }}
+        name: {{ $name }}-cp-{{ $cpID }}
   kubeadmConfigSpec:
     clusterConfiguration:
       apiServer:
         extraArgs:
-          tracing-config-file: /etc/kubernetes/apiserver/tracing-configuration.yaml
+          - name: tracing-config-file
+            value: /etc/kubernetes/apiserver/tracing-configuration.yaml
         extraVolumes:
           - hostPath: /etc/kubernetes/apiserver
             mountPath: /etc/kubernetes/apiserver
             name: configs
       controllerManager:
         extraArgs:
-          bind-address: 0.0.0.0
+          - name: bind-address
+            value: "0.0.0.0"
       scheduler:
         extraArgs:
-          bind-address: 0.0.0.0
+          - name: bind-address
+            value: "0.0.0.0"
       etcd:
         local:
           extraArgs:
-            listen-metrics-urls: http://0.0.0.0:2381
-            experimental-enable-distributed-tracing: "true"
-            experimental-distributed-tracing-address: telemetry-exporter-components-collector.telemetry.svc.cluster.local:4317
-      networking:
-        dnsDomain: cluster.local
-        podSubnet: {{ .Values.config.podSubnet }}
-        serviceSubnet: {{ .Values.config.serviceSubnet }}
+            - name: listen-metrics-urls
+              value: http://0.0.0.0:2381
+            - name: experimental-enable-distributed-tracing
+              value: "true"
+            - name: experimental-distributed-tracing-address
+              value: telemetry-exporter-components-collector.telemetry.svc.cluster.local:4317
     files:
       - path: /etc/kubernetes/apiserver/tracing-configuration.yaml
         owner: "root:root"

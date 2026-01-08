@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"testing"
 	"time"
@@ -28,25 +29,30 @@ func installCluster(t *testing.T, ko *k8s.KubectlOptions, releaseName string, cl
 }
 
 func installClusterWithSetValues(t *testing.T, ko *k8s.KubectlOptions, releaseName string, setValues map[string]string, cleanup bool) {
+	installClusterWithValues(t, ko, releaseName, []string{}, setValues, cleanup)
+}
+
+func installClusterWithValues(t *testing.T, ko *k8s.KubectlOptions, releaseName string, valuesFiles []string, setValues map[string]string, cleanup bool) {
 	setValuesOverrides := map[string]string{
 		"features.components":         "false",
 		"features.exporterComponents": "false",
 	}
-	for key, value := range setValues {
-		setValuesOverrides[key] = value
-	}
+	maps.Copy(setValuesOverrides, setValues)
 
 	valuesFile := "values/cluster.yaml"
 	helm.Upgrade(t, &helm.Options{
-		ValuesFiles:    []string{valuesFile},
+		ValuesFiles:    append(([]string{valuesFile}), valuesFiles...),
 		SetValues:      setValuesOverrides,
 		KubectlOptions: ko,
 		ExtraArgs: map[string][]string{
 			"upgrade": {"--install", "--wait"},
 		},
 	}, "../charts/cluster", releaseName)
+
 	if cleanup {
+		releaseNamespace := ko.Namespace
 		t.Cleanup(func() {
+			ko.Namespace = releaseNamespace
 			helm.Delete(t, &helm.Options{
 				KubectlOptions: ko,
 			}, releaseName, true)

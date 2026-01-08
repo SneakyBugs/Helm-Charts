@@ -1,4 +1,5 @@
-apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/bootstrap.cluster.x-k8s.io/kubeadmconfigtemplate_v1beta2.json
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
 kind: KubeadmConfigTemplate
 metadata:
   name: {{ include "cluster.fullname" . }}

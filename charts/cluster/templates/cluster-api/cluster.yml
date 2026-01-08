@@ -1,5 +1,6 @@
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cluster.x-k8s.io/cluster_v1beta2.json
 {{ $name := include "cluster.fullname" . -}}
-apiVersion: cluster.x-k8s.io/v1beta1
+apiVersion: cluster.x-k8s.io/v1beta2
 kind: Cluster
 metadata:
   name: {{ $name }}
@@ -14,12 +15,10 @@ spec:
       cidrBlocks:
         - {{ .Values.config.serviceSubnet }}
   infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    apiGroup: infrastructure.cluster.x-k8s.io
     kind: KubevirtCluster
     name: {{ $name }}
-    namespace: {{ .Release.Namespace }}
   controlPlaneRef:
-    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    apiGroup: controlplane.cluster.x-k8s.io
     kind: KubeadmControlPlane
     name: {{ $name }}
-    namespace: {{ .Release.Namespace }}

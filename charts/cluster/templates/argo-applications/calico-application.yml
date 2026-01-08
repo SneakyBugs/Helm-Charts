@@ -23,6 +23,11 @@ spec:
     helm:
       releaseName: tigera-operator
       valuesObject:
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+          - key: node.kubernetes.io/not-ready
+            operator: Exists
         resources:
           requests:
             cpu: 50m

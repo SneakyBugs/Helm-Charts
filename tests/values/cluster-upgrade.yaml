@@ -1,0 +1,3 @@
+config:
+  version: v1.35.0
+  image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.35.0-5986a60-20260102.qcow2
