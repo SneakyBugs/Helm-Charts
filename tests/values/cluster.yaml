@@ -7,7 +7,8 @@ config:
       - sneakybugs.com.
 
   gateway:
-    hostname: "*.dev.sneakybugs.com"
+    listeners:
+      - hostname: "*.dev.sneakybugs.com"
 
   certManager:
     stagingEnvironment: true

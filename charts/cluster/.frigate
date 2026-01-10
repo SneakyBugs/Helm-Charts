@@ -11,49 +11,215 @@ The chart requires the following addons to be installed on the host cluster:
 - Argo CD
 - KubeVirt
 - Cluster API with Cluster API Provider KubeVirt
+- Rook
 - External Secrets
+- CoreWarden DNS
+- Load balancer implementation
 - Kyverno with policies for generating Argo CD cluster secrets and External Secrets SecretStores
 
-Make sure to specify the namespace Argo CD is watching resources in using the `argocdNamespace` values option.
+This chart is built to work specifically for the Perseus Cloud project, and unless
+you're running a cluster of the project this chart will likely not work for you.
 
 The chart requires a virtual machine image built from the
 [Kubernetes image builder project](https://github.com/SneakyBugs/Kubernetes-Image-Builder/)
 available for download over HTTP(S).
 Make sure to set `config.image` to the url of the virtual machine image.
 
-Secrets containing Cloudflare token, DNS API credentials, and MinIO bucket credentials on the host cluster are required.
+Secrets containing Cloudflare token and CoreWarden API credentials on the host cluster are required.
 Make sure to create the secrets, specify the namespace of the secrets in
 `config.externalSecrets.remoteNamespace`, and authorize access to the secrets via `config.rbac`.
 
-## Install
+## Tutorial
 
-To install the chart:
+This tutorial will take you through creating a cluster on the Perseus Cloud
+platform.
 
-```
-helm install my-release oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
-```
+The cluster chart needs a domain name for Gateway, Cert Manager and External DNS
+functionality. This tutorial will use `example.com`.
 
-Assuming you have a `values.yaml` with your values overrides:
+Create a token for CloudFlare DNS with edit access to the DNZ zone of the domain
+you will be using for the cluster.
+Insert it into a secret in the `tenant-secrets` namespace:
 
-## Upgrade
-
-To upgrade the chart:
-
-```
-helm upgrade my-release oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
-```
-
-Assuming you have a `values.yaml` with your values overrides:
-
-## Uninstall
-
-To uninstall the chart:
-
-```
-helm uninstall my-release
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cert-manager
+  namespace: tenant-secrets
+type: Opaque
+data:
+  cloudflareToken: REDACTED
 ```
 
-## Configuration
+Create a CoreWarden DNS service account with edit access to the DNZ zone of the
+domain you will be using for the cluster.
+Insert it into a secret in the `tenant-secrets` namespace:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cert-manager
+  namespace: tenant-secrets
+type: Opaque
+data:
+  id: REDACTED
+  secret: REDACTED
+```
+
+Create a values file with the following content. Replace `exmaple.com` with your
+domain name.
+
+```yaml
+# Inside values.yaml
+config:
+  externalDNSWebhook:
+    zones:
+      - example.com.
+  gateway:
+    hostname: "*.example.com"
+```
+
+Install the chart:
+
+```bash
+helm upgrade --install cluster oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
+```
+
+Wait for all Argo Applications to become ready.
+
+Get the Kubeconfig and use it:
+
+```bash
+kubectl get secret cluster-kubeconfig -o json | jq -r .data.value | base64 -d > tenant.conf
+export KUBECONFIG="$(pwd)/tenant.conf"
+```
+
+Now you can access the tenant cluster API server:
+
+```
+kubectl get pods -A
+```
+
+You now have a fully functional cluster.
+
+
+## How-to guides
+
+### How to upgrade a cluster's Kubernetes version
+
+This guide assumes you have a cluster of version `v1.34.2` installes with
+`my-cluster` release name.
+
+Edit the `config.version` and `config.image` fields of your values to contain a
+new version and new VM image for that version:
+
+```yaml
+# Inside values.yaml
+# ...
+config:
+  version: v1.35.0
+  image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.35.0-5986a60-20260102.qcow2
+```
+
+Applying the new values will cause a rollout of both control plane and worker
+nodes.
+Upgrade the chart to apply the new values:
+
+```bash
+helm upgrade my-cluster oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
+```
+
+Use the following command on the tenant cluster to see how many nodes have been
+rolled to the new version:
+
+```bash
+kubectl get nodes
+```
+
+Once all nodes of the tenant cluster are of the new version, the cluster is
+upgraded.
+
+### How to restore a cluster from a backup
+
+This guide assumes you want to restore from a cluster called `old-cluster` in the
+`example` namespace.
+
+Copy the values of the `old-cluster` Helm release to a file named `values.yaml`.
+Override the following values:
+
+```yaml
+# Inside values.yaml
+# ...
+config:
+  cephCSIRBD:
+    existingRadosNamespace: example-old-cluster
+  velero:
+    storage:
+      prefix: example-old-cluster
+      existingObjectBucketClaim: example-old-cluster-velero
+      existingObjectBucketUser: example-old-cluster-velero-backup
+```
+
+Install the chart with a new name. We will use `new-cluster` for this guide.
+
+```bash
+helm upgrade --install new-cluster oci://ghcr.io/sneakybugs/{{ name }} --version {{ version }} --values values.yaml
+```
+
+Wait for all Argo applications to become synced and healthy.
+Get the new cluster's Kubeconfig:
+
+```bash
+kubectl get secret new-cluster-kubeconfig -o json | jq -r .data.value | base64 -d > tenant.conf
+export KUBECONFIG="$(pwd)/tenant.conf"
+```
+
+Create a `restore.yaml` file with the following content.
+For the purpose of this guide we will restore from a backup called `my-backup`.
+
+```yaml
+# Inside restore.yaml
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: old-cluster-restore
+spec:
+  backupName: my-backup
+```
+
+Create the restore resource:
+
+```bash
+kubectl apply -f restore.yaml
+```
+
+Wait until the restore is completed.
+You now have a restored replica of `old-cluster`.
+
+### How to destroy a cluster
+
+To destroy a cluster uninstall the chart:
+
+```bash
+helm uninstall my-cluster
+```
+
+Clusters with `features.backups` enabled the chart keeps a
+CephBlockPoolRadosNamespace, a ObjectBucketClaim and a CephObjectStoreUser.
+Use the following commands to identify resources that were kept:
+
+```bash
+kubectl get -n rook-ceph cephblockpoolradosnamespace
+kubectl get -n rook-ceph objectbucketclaim
+kubectl get -n rook-ceph cephobjectstoreuser
+```
+
+Only delete the CephBlockPoolRadosNamespace and ObjectBucketClaim
+**IF YOU WANT TO LOSE BACKUP DATA.**
+
+## Configuration reference
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |

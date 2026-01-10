@@ -6,10 +6,15 @@ nameOverride: "" # Override chart name.
 fullnameOverride: "" # Override full release name.
 
 gateway:
-  gatewayClassName: envoy
-  name: external
-  namespace: envoy
-  hostname: "*.example.com"
+  gatewayClassName: envoy # GatewayClass name to use for the Gateway.
+  name: external # Name of the Gateway.
+  namespace: envoy # Namespace of the Gateway.
+  listeners: # List of listeners for the gateway. Must specify hostname, can optionally specify protocol, port and tls.
+    - hostname: "*.example.com"
+      # protocol: TLS
+      # port: 6443
+      # tls:
+      #   mode: Passthrough
 
 externalSecrets:
   clusterSecretStoreName: management # Name of configured ClusterSecretStore.
@@ -46,7 +51,7 @@ velero:
 cephCSIRBD:
   namespace: ceph-csi-rbd # Namespace where Ceph CSI RBD plugin is installed in the tenant cluster.
   rookNamespace: rook-ceph # Rook namespace in the management cluster for Ceph clients and Rados namespace.
-  provisionerClientSecretRemoteKey: example
-  nodeClientSecretRemoteKey: example
-  cephClusterID: external
-  cephPool: ceph-blockpool
+  provisionerClientSecretRemoteKey: example # Name of the Ceph client secret for the CSI provisioner client.
+  nodeClientSecretRemoteKey: example # Name of the ceph client secret for the CSI node client.
+  cephClusterID: external # Cluster ID to use for the StorageClass. Must be configured in the Ceph CSI RBD chart.
+  cephPool: ceph-blockpool # RBD pool to use for the StorageClass.

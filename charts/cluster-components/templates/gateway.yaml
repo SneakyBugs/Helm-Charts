@@ -27,15 +27,21 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
-    - name: https
-      protocol: HTTPS
-      port: 443
-      hostname: {{ .Values.gateway.hostname | quote }}
+    {{- range $index, $listener := .Values.gateway.listeners }}
+    - name: {{ printf "listener-%d" $index | quote }}
+      protocol: {{ default "HTTPS" $listener.protocol }}
+      port: {{ default 443 $listener.port }}
+      hostname: {{ $listener.hostname | quote }}
       tls:
+        {{- with $listener.tls }}
+        {{- toYaml . | nindent 8 }}
+        {{- else }}
         certificateRefs:
           - group: ""
             kind: Secret
-            name: {{ .Values.gateway.name }}-tls
+            name: {{ $.Values.gateway.name }}-tls
+        {{- end }}
       allowedRoutes:
         namespaces:
           from: All
+    {{- end }}

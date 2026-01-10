@@ -23,7 +23,7 @@ versions:
   externalSnapshotter: v8.4.0 # external-snapshotter version to deploy.
 
 features:
-  backups: true # Enable Velero backups when true.
+  backups: true # Enable Velero backups when true. When enabled CephBlockPoolRadosNamespace, ObjectBucketClaim and CephObjectStoreUser are kept when deleting the chart for use when restoring backups.
   telemetryExporter: true # Enable OpenTelemetry exporter when true.
   kro: true # Enable Kro when true.
   components: true # Disable cluster-components chart when false.
@@ -32,30 +32,30 @@ features:
 config:
   podSubnet: 10.243.0.0/16 # Pod subnet to use.
   serviceSubnet: 10.95.0.0/16 # Service subnet to use.
-  version: v1.34.2 # Kubernetes version of the node image.
-  image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use.
+  version: v1.34.2 # Kubernetes version of the cluster. Triggers control plane rollout.
+  image: https://objects.infra.f6n.io/images/rocky-10.1-k8s-1.34.2-20251221.qcow2 # Node image to use. Triggers node rollout when changed.
 
   controlPlane:
     replicas: 1 # Control plane node count.
     resources:
-      storage: 16Gi # Control plane node disk size.
-      cores: 2 # Control plane node core count.
-      memory: 4Gi # Control plane node RAM size.
+      storage: 16Gi # Control plane node disk size. Triggers node rollout when changed.
+      cores: 2 # Control plane node core count. Triggers node rollout when changed.
+      memory: 4Gi # Control plane node RAM size. Triggers node rollout when changed.
   workers:
     replicas: 1 # Worker node count.
     resources:
-      storage: 32Gi # Worker node disk size.
-      cores: 4 # Worker node core count.
-      memory: 8Gi # Worker node RAM size.
+      storage: 32Gi # Worker node disk size. Triggers node rollout when changed.
+      cores: 4 # Worker node core count. Triggers node rollout when changed.
+      memory: 8Gi # Worker node RAM size. Triggers node rollout when changed.
 
   cephCSIRBD:
     existingRadosNamespace: null # When specified the cluster will use an existing Rados namespace instead of creating one.
-    rookNamespace: rook-ceph
-    blockPoolName: ceph-blockpool
-    cephMonitors:
+    rookNamespace: rook-ceph # Namespace Rook is installed in on the management cluster.
+    blockPoolName: ceph-blockpool # CephBlockPool name to use for volumes.
+    cephMonitors: # Ceph mon endpoints for connecting to the Ceph cluster.
       - 10.1.0.10:6789
 
-  imageRegistries:
+  imageRegistries: # Image registy overrides. Require node rollout to take effect.
     - prefix: docker.io
       location: oci.infra.f6n.io/docker
     - prefix: quay.io
@@ -68,7 +68,8 @@ config:
       location: oci.infra.f6n.io/external-secrets
 
   gateway:
-    hostname: '*.infra.sneakybugs.com'
+    listeners: # List of Gateway listeners. Must specify hostname, can optionally specify protocol, port and tls.
+      - hostname: "*.example.com"
 
   otlpExporter:
     endpoint: otel.infra.f6n.io:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
