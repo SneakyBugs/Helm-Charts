@@ -44,4 +44,5 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "cluster.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "cluster.fullname" . }}
 app.kubernetes.io/part-of: {{ .Release.Namespace }}-{{ include "cluster.fullname" . }}
+cluster.x-k8s.io/cluster-name: {{ include "cluster.fullname" . }}
 {{- end -}}
