@@ -25,13 +25,15 @@ spec:
               name: {{ include "postgres.fullname" . }}
               annotations:
                 external-dns.alpha.kubernetes.io/hostname: {{ .Values.hostname }}
+          updateStrategy: patch
   bootstrap: {{- toYaml .Values.bootstrap | nindent 4 }}
   imageName: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
   instances: {{ .Values.instances }}
   resources: {{- toYaml .Values.resources | nindent 4 }}
   storage: {{- toYaml .Values.storage | nindent 4 }}
   plugins:
-    - name: barman-cloud.cloudnative-pg.io
+    - enabled: true
+      name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
       parameters:
         barmanObjectName: {{ include "postgres.fullname" . }}
