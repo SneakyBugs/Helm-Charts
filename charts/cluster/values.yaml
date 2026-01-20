@@ -72,7 +72,7 @@ config:
       - hostname: "*.example.com"
 
   otlpExporter:
-    endpoint: otel.infra.f6n.io:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
+    endpoint: otel.ops.f6n.io:4317 # Centralized OpenTelemetry Collector endpoint to export telemetry to.
 
   externalSecrets: # Values for cluster-components chart externalSecrets field.
     remoteNamespace: tenant-secrets
